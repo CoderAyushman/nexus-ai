@@ -11,8 +11,8 @@ export default function TabLayout() {
           fontWeight: 'bold',
         },
       }}>
-      <Tabs.Screen name="(home)" />
-      <Tabs.Screen name="setting" />
+      <Tabs.Screen name="Home" />
+      <Tabs.Screen name="Setting" />
     </Tabs>
   );
 }

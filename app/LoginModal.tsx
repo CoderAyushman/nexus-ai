@@ -2,19 +2,21 @@ import { View, Text, StyleSheet, Pressable, TextInput, Alert } from 'react-nativ
 import React, { useState } from 'react'
 import Entypo from '@expo/vector-icons/Entypo';
 import { router } from 'expo-router';
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from '../firebaseConfig';
 const LoginModal = () => {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
-    const onPressNext = async () => {
+    const [isSignIn, setisSignIn] = useState<boolean>(false)
+    const onPressNextForSignUp = async () => {
        try {
         createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           // Signed up 
           const user:any = userCredential.user;
           Alert.alert('User created successfully',user.email)
-          
+          router.push('/Home')
+        //   console.log(user)
           // ...
         })
         .catch((error) => {
@@ -26,6 +28,10 @@ const LoginModal = () => {
             else if(errorCode === 'auth/email-already-in-use'){
                 Alert.alert('Alert','Email already in use')
             }
+            else if(errorCode === 'auth/invalid-email'){
+                Alert.alert('Alert','Invalid email')
+            }
+
             else{
                 Alert.alert('Error',errorMessage)
             }
@@ -33,18 +39,54 @@ const LoginModal = () => {
        } catch (error:any) {
         Alert.alert(error)
        }
-    }
+    }   
+    const onPressNextForSignIn = async () => {
+       try {
+        signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          // Signed up 
+          const user:any = userCredential.user;
+          Alert.alert('Signed in successfully',user.email)
+          router.push('/Home')
+        //   console.log(user)          
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+            if(errorCode === 'auth/weak-password'){
+                Alert.alert('Alert','Password should be at least 6 characters')
+            }
+            else if(errorCode === 'auth/wrong-password'){
+                Alert.alert('Alert','Wrong password')
+            }
+            else if(errorCode === 'auth/invalid-email'){
+                Alert.alert('Alert','Invalid email')
+            }
+
+            else if(errorCode === 'auth/user-not-found'){
+                Alert.alert('Alert','User not found')
+            }
+            else{
+                Alert.alert('Error',errorMessage)
+            }
+        });
+       } catch (error:any) {
+        Alert.alert(error)
+       }
+    }   
   return (
     <View style={styles.view}>
     <View style={styles.container}>
       <Entypo style={styles.entypo} name="cross" size={25} color="gray" onPress={()=>{router.back()}}/>
-      <Text style={styles.signup}>SIGN IN / SIGN UP</Text>
+      
+      {isSignIn ? <Text style={styles.signup}>SIGN UP</Text>:<Text style={styles.signup}>SIGN IN</Text>}
       <Text style={styles.signupText}>EMAIL</Text>
       <TextInput placeholder='Enter your email' onChangeText={setEmail}></TextInput>
       <Text style={styles.signupText}>PASSWORD</Text>
       <TextInput placeholder='Enter your password' onChangeText={setPassword}></TextInput>
-      <Pressable style={styles.pressable} onPress={onPressNext}><Text style={{color:'white',paddingBlock:10,paddingInline:110,fontWeight:'bold'}}>NEXT</Text></Pressable>
-      
+      <Pressable style={styles.pressable} onPress={isSignIn ? onPressNextForSignUp:onPressNextForSignIn}><Text style={{color:'white',paddingBlock:10,paddingInline:110,fontWeight:'bold'}}>NEXT</Text></Pressable>
+      {isSignIn ? <Text style={styles.newUser}>Already have an account? <Text style={{color:'blue',fontWeight:'bold'}} onPress={()=>{setisSignIn(false)}}>Sign In</Text></Text>:<Text style={styles.newUser}>Don't have an account? <Text style={{color:'blue',fontWeight:'bold'}} onPress={()=>{setisSignIn(true)}}>Sign Up</Text></Text>}  
     </View>
     </View>
   ) 
@@ -93,9 +135,13 @@ const styles=StyleSheet.create({
     },
     pressable:{
         marginInline:'auto',
-        marginTop:15,
+        marginBlock:5,
         backgroundColor:'black',
         borderRadius:30,
+    },
+    newUser:{
+        marginInline:'auto',
+        marginTop:5,
     }
 
 })
