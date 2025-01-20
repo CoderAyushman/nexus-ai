@@ -4,7 +4,7 @@
     "slug": "nexusai-new",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    // "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,8 +14,8 @@
     "android": {
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/splash.png",
-        "backgroundColor": "#ffffff"
+        // "foregroundImage": "./assets/images/splash.png",
+        "backgroundColor": "#000000"
       },
       "package": "com.anonymous.nexusainew"
     },
@@ -26,15 +26,7 @@
     },
     "plugins": [
       "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/image.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ],
+      "expo-splash-screen",
       "expo-font",
       "@react-native-firebase/app",
       "@react-native-google-signin/google-signin"

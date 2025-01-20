@@ -4,6 +4,8 @@ import Entypo from '@expo/vector-icons/Entypo';
 import { router } from 'expo-router';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from '../firebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const LoginModal = () => {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
@@ -16,6 +18,7 @@ const LoginModal = () => {
           const user:any = userCredential.user;
           Alert.alert('User created successfully',user.email)
           router.push('/Home')
+          AsyncStorage.setItem('user',user.email);
         //   console.log(user)
           // ...
         })
@@ -48,6 +51,8 @@ const LoginModal = () => {
           const user:any = userCredential.user;
           Alert.alert('Signed in successfully',user.email)
           router.push('/Home')
+          AsyncStorage.setItem('user',user.email);
+
         //   console.log(user)          
           // ...
         })

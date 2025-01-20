@@ -1,17 +1,18 @@
 import { Stack } from 'expo-router';
 import { Outfit_400Regular,Outfit_500Medium,Outfit_700Bold, useFonts } from '@expo-google-fonts/outfit';
 import * as SplashScreen from 'expo-splash-screen';
-import {useEffect} from 'react';
+import React, { useEffect } from 'react'
 
-SplashScreen.preventAutoHideAsync();
+// SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
+
   const [loaded, error] = useFonts({
     Outfit_400Regular,Outfit_500Medium,Outfit_700Bold
   });
 
   useEffect(() => {
     if (loaded || error) {
-      SplashScreen.hideAsync();
+      // SplashScreen.hideAsync();
     }
   }, [loaded, error]);
 
@@ -20,11 +21,10 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack >
+    <Stack screenOptions={{headerShown:false}}>
       <Stack.Screen name="index"  options={{headerShown:false}}/>
       <Stack.Screen name="LoginPage"  options={{headerShown:false}}/>
       <Stack.Screen name="LoginModal"  options={{headerShown:false,presentation:'containedTransparentModal'}}/>
-
     </Stack>
   );
 }

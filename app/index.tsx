@@ -1,12 +1,52 @@
 import { StyleSheet, View } from 'react-native'
-import React from 'react'
 import GetStarted from '@/components/GetStarted';
+import React, { useEffect, useState } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
+// import * as SplashScreen from 'expo-splash-screen';
+import SplashScreenD from '@/components/SplashScreenD';
 
-
+// SplashScreen.preventAutoHideAsync()
+// SplashScreen.setOptions({
+//   duration: 10000,
+//   fade: true,
+// })
  const index = () => {
+  const [isUserFind, setisUserFind] = useState<boolean>(false)
+  
+  useEffect(()=>{
+
+ checkUser();
+  },[])
+  useEffect(() => {
+    if (isUserFind) {
+      router.push('/Home');
+    }
+  }, [isUserFind]);
+  const checkUser = async () => {
+    try {
+      const user = await AsyncStorage.getItem('user');
+      if (user) { 
+        console.log(user);
+        setisUserFind(true)
+        router.replace('/Home')
+      } else {
+        console.log('No user found');
+        // setisUserFind(true
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      // SplashScreen.hideAsync();
+    }
+  }
+
   return (
-    <View style={styles.container}>
-    <GetStarted/>
+    <View style={styles.container} >
+      {/* {<SplashScreenD /> && <GetStarted />} */}
+      
+      {/* {isUserFind?<SplashScreenD/>:<GetStarted/>} */}
+      <SplashScreenD/>
     </View>
   )
 }
