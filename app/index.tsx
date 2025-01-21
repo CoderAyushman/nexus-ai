@@ -3,10 +3,9 @@ import GetStarted from '@/components/GetStarted';
 import React, { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-// import * as SplashScreen from 'expo-splash-screen';
-import SplashScreenD from '@/components/SplashScreenD';
+import * as SplashScreen from 'expo-splash-screen';
 
-// SplashScreen.preventAutoHideAsync()
+SplashScreen.preventAutoHideAsync()
 // SplashScreen.setOptions({
 //   duration: 10000,
 //   fade: true,
@@ -20,7 +19,7 @@ import SplashScreenD from '@/components/SplashScreenD';
   },[])
   useEffect(() => {
     if (isUserFind) {
-      router.push('/Home');
+      router.replace('/Home');
     }
   }, [isUserFind]);
   const checkUser = async () => {
@@ -37,16 +36,13 @@ import SplashScreenD from '@/components/SplashScreenD';
     } catch (error) {
       console.log(error);
     } finally {
-      // SplashScreen.hideAsync();
+      SplashScreen.hideAsync();
     }
   }
 
   return (
     <View style={styles.container} >
-      {/* {<SplashScreenD /> && <GetStarted />} */}
-      
-      {/* {isUserFind?<SplashScreenD/>:<GetStarted/>} */}
-      <SplashScreenD/>
+        <GetStarted />      
     </View>
   )
 }
