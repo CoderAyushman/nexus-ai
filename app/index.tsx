@@ -24,6 +24,7 @@ SplashScreen.preventAutoHideAsync()
   }, [isUserFind]);
   const checkUser = async () => {
     try {
+      //hello 
       const user = await AsyncStorage.getItem('user');
       if (user) { 
         console.log(user);
