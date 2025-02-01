@@ -1,11 +1,9 @@
-import { View, Text ,TextInput,ImageBackground,StyleSheet} from 'react-native'
+import { View, Text ,TextInput,ImageBackground,StyleSheet,ScrollView, Image} from 'react-native'
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import AntDesign from '@expo/vector-icons/AntDesign';
 const Home = () => {
-  
   return (
-  
     <View style={{display:'flex',alignItems:'center',justifyContent:'center'}} >
       <ImageBackground style={styles.image}  source={require('../../assets/images/logobw.png')} /> 
     <View style={styles.container}>
@@ -13,9 +11,17 @@ const Home = () => {
       <Feather name="message-square" size={24} color="black" />
       <FontAwesome6 name="pen-to-square" size={24} color="black" />
       </View>
+      <ScrollView style={styles.scrollView}> 
       <View style={styles.promptArea}>
-        <Text>Start a new chat</Text>
+        <Text style={styles.promptText}>who is modi</Text>
       </View>
+      <View style={styles.promptAnswerArea}>
+        <Image style={{width:32,height:30}} source={require('../../assets/images/splash.png')} />
+        <Text style={styles.promptAnswer}>Narendra Modi is an Indian politician serving as the 14th and current Prime Minister of India since May 26, 2014. He is a member of the Bharatiya Janata Party (BJP) and has been a prominent figure in Indian politics. Before becoming Prime Minister, Modi served as the Chief Minister of Gujarat from 2001 to 2014.</Text>
+      </View>
+      
+      
+      </ScrollView>
       <View style={styles.footer}>
         <TextInput style={{marginLeft:20,maxWidth:200}} multiline disableFullscreenUI  placeholder='Message' />
         <AntDesign style={{marginRight:20,padding:10,backgroundColor:"black",borderRadius:30,position:'absolute',right:0}} name="arrowup" size={24} color="white" />
@@ -24,9 +30,7 @@ const Home = () => {
     </View>
   )
 }
-
-export default Home
-
+export default Home;
 const styles =StyleSheet.create({
 container:{
   display:'flex',
@@ -58,7 +62,8 @@ header:{
   borderBottomColor:'grey',
   zIndex:10,
   top:0,
-  position:'absolute'
+  // position:'absolute',
+  backgroundColor:'white'
 },
 footer:{
   display:'flex',
@@ -70,8 +75,8 @@ footer:{
   borderTopWidth:1,
   borderTopColor:'grey',
   zIndex:10,
-  position:'absolute', 
-  bottom:0
+  bottom:0,
+  backgroundColor:'white'
 },
 imageContainer:{
   display:'flex',
@@ -82,10 +87,49 @@ imageContainer:{
   zIndex:1
 },
 promptArea:{
-  marginTop:100,
+  width:'100%',
+  marginTop:20,
   zIndex:10,
   color:'black',
   display:'flex',
-  alignItems:'flex-end'
+  flexDirection:'column',
+  justifyContent:'center',
+  alignItems:'flex-end',
+  // marginInline:20,
+
+},
+promptAnswerArea:{
+  width:'100%',
+  marginTop:50,
+  zIndex:10,
+  color:'black',
+  display:'flex',
+  flexDirection:'row',
+  justifyContent:'flex-start',
+  alignItems:'flex-start',
+  marginInline:10,
+  gap:5
+
+},
+promptText:{
+  marginRight:20,
+  paddingBlock:10,
+  paddingInline:20,
+  backgroundColor:'#808080',
+  borderRadius:20,
+  color:'white',
+  fontWeight:'bold'
+},
+promptAnswer:{
+  fontWeight:'bold',
+  width:'80%',
+  paddingBottom:20
+
+},
+scrollView:{
+  width:'100%',
+  display:'flex',
+  flexDirection:'column',
+ 
 }
 })
