@@ -1,13 +1,19 @@
-import { View, Text ,TextInput,ImageBackground,StyleSheet,ScrollView, Image, Alert} from 'react-native'
+import { View, Text ,TextInput,ImageBackground,StyleSheet,ScrollView, Image, Alert, SafeAreaView} from 'react-native'
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useEffect, useState } from 'react';
-import {GoogleGenerativeAI} from "@google/generative-ai"
+import {GoogleGenerativeAI} from "@google/generative-ai";
+
+import Markdown from '@ukdanceblue/react-native-markdown-display';
+type Props = {
+  prompt:string;
+  answer:string;
+}
 const Home = () => {
   const [promts, setPromts] = useState<string[]>([])
   const [promtText, setPromtText] = useState<string>('')
-  const [answer, setAnswer] = useState<string[]>([])
+  const [answer, setAnswer] = useState<Props[]>([])
   // const [answer, setAnswer] = useState<string>('')
   
   const apiKey:any = process.env.GEMINI_API_KEY;
@@ -47,7 +53,7 @@ const Home = () => {
     const result = await chatSession.sendMessage(question);
     const responseText = result.response.text();
     console.log("response",responseText);
-    setAnswer([...answer,responseText]);
+    setAnswer([...answer,{prompt:question,answer:responseText}]);
     // Alert.alert("Nexus AI",responseText);
   }
   
@@ -75,14 +81,29 @@ const onSend=()=>{
         <Image style={{width:32,height:30}} source={require('../../assets/images/splash.png')} />
         <Text style={styles.promptAnswer}>Narendra Modi is an Indian politician serving as the 14th and current Prime Minister of India since May 26, 2014. He is a member of the Bharatiya Janata Party (BJP) and has been a prominent figure in Indian politics. Before becoming Prime Minister, Modi served as the Chief Minister of Gujarat from 2001 to 2014.</Text>
         </View> */}
-        <ScrollView style={styles.scrollView}> 
-      {
-        promts.map((promts,index)=>(
-          <View key={index}  style={styles.promptArea}>
-            <Text style={styles.promptText}>{promts}</Text>
-          </View> 
-        ))
-      }
+          {/* {answer.map((prompt,index)=>(
+            <View key={index} style={styles.promptArea}>
+           
+            </View>
+          ))} */}
+
+
+         
+            <ScrollView style={styles.scrollView}> 
+      {promts.map((prompt, index) => (
+          
+        <View key={index}>
+         <View  style={styles.promptArea}>
+        
+       <Text style={styles.promptText}>{prompt}</Text>
+        </View>
+       <View style={styles.promptAnswerArea}>
+       <Image style={{width:32,height:30}} source={require('../../assets/images/splash.png')} />
+       <Text style={styles.promptAnswer}><Markdown>{answer[index]?.answer}</Markdown></Text>
+       </View>
+       </View>
+     
+      ))}
       </ScrollView>
       
       <View style={styles.footer}>
