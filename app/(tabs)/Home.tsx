@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import {GoogleGenerativeAI} from "@google/generative-ai";
 
 import Markdown from '@ukdanceblue/react-native-markdown-display';
+import { router } from 'expo-router';
 type Props = {
   prompt:string;
   answer:string;
@@ -17,7 +18,7 @@ const Home = () => {
   // const [answer, setAnswer] = useState<string>('')
   
   const apiKey:any = process.env.GEMINI_API_KEY;
-  const genAI = new GoogleGenerativeAI('AIzaSyCfF6tzrHFpvCj6upC1OfWGjpb7WGjGm-U');
+  const genAI = new GoogleGenerativeAI('AIzaSyCfF6tzrHFpvCj6upC1OfWGjpb7WGjGm-U')
   
   const model = genAI.getGenerativeModel({
     model: "gemini-2.0-flash-exp",
@@ -71,25 +72,11 @@ const onSend=()=>{
       <ImageBackground style={styles.image}  source={require('../../assets/images/logobw.png')} /> 
     <View style={styles.container}>
       <View style={styles.header}>
-      <Feather name="message-square" size={24} color="black" />
+      <Feather name="message-square" size={24} color="black" onPress={()=>router.push('/PreviousChats')} />
       <FontAwesome6 name="pen-to-square" size={24} color="black" />
       </View>
-      {/* <View style={styles.promptArea}>
-        <Text style={styles.promptText}>who is modi</Text>
-        </View>
-        <View style={styles.promptAnswerArea}>
-        <Image style={{width:32,height:30}} source={require('../../assets/images/splash.png')} />
-        <Text style={styles.promptAnswer}>Narendra Modi is an Indian politician serving as the 14th and current Prime Minister of India since May 26, 2014. He is a member of the Bharatiya Janata Party (BJP) and has been a prominent figure in Indian politics. Before becoming Prime Minister, Modi served as the Chief Minister of Gujarat from 2001 to 2014.</Text>
-        </View> */}
-          {/* {answer.map((prompt,index)=>(
-            <View key={index} style={styles.promptArea}>
-           
-            </View>
-          ))} */}
-
-
-         
-            <ScrollView style={styles.scrollView}> 
+        
+      <ScrollView style={styles.scrollView}> 
       {promts.map((prompt, index) => (
           
         <View key={index}>
