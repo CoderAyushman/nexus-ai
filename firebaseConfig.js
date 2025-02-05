@@ -12,6 +12,7 @@ const firebaseConfig = {
   apiKey: 'AIzaSyAsuAuYh3ZxwT61y1vEm62iJFzrXhY6vCw',
   authDomain: 'nexus-ai-ed5c6.firebaseapp.com',
   projectId: 'nexus-ai-ed5c6',
+  messagingSenderId: '108857393027', 
 };
 
 

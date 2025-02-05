@@ -25,7 +25,7 @@ export default function RootLayout() {
       <Stack.Screen name="index"  options={{headerShown:false}}/>
       <Stack.Screen name="LoginPage"  options={{headerShown:false}}/>
       <Stack.Screen name="LoginModal"  options={{headerShown:false,presentation:'containedTransparentModal'}}/>
-      <Stack.Screen name="PreviousChats"  options={{headerShown:false,presentation:'modal'}}/>
+      <Stack.Screen name="PreviousChats"  options={{headerShown:false,presentation:'containedTransparentModal'}}/>
     </Stack>
   );
 }
