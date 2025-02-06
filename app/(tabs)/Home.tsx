@@ -7,6 +7,9 @@ import {GoogleGenerativeAI} from "@google/generative-ai";
 
 import Markdown from '@ukdanceblue/react-native-markdown-display';
 import { router } from 'expo-router';
+import { collection, addDoc } from "firebase/firestore"; 
+import { db } from '@/firebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 type Props = {
   prompt:string;
   answer:string;
@@ -67,13 +70,32 @@ const onSend=()=>{
   setPromts([...promts,promtText.trim()])
   askQuestion(promtText)
 }
+const newChat = async()=>{
+  try {
+    const docRef = await addDoc(collection(db, "users"), {
+      
+      first: "Ada",
+      middle: "Mathison",
+      mid: "Mathison",
+      last: "Lovelac",
+      born: 1815
+    });
+    console.log("Document written with ID: ", docRef.id);
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+}
+const removeLocalStorage =()=>{
+  AsyncStorage.removeItem('user');
+}
   return (
     <View style={{display:'flex',alignItems:'center',justifyContent:'center'}} >
       <ImageBackground style={styles.image}  source={require('../../assets/images/logobw.png')} /> 
     <View style={styles.container}>
       <View style={styles.header}>
       <Feather name="message-square" size={24} color="black" onPress={()=>router.push('/PreviousChats')} />
-      <FontAwesome6 name="pen-to-square" size={24} color="black" />
+      <FontAwesome6 name="pen-to-square" size={24} color="black" onPress={newChat} />
+      <FontAwesome6 name="box" size={24} color="black" onPress={removeLocalStorage} />
       </View>
         
       <ScrollView style={styles.scrollView}> 
@@ -180,7 +202,6 @@ promptAnswerArea:{
   alignItems:'flex-start',
   marginInline:10,
   gap:5
-
 },
 promptText:{
   marginRight:20,

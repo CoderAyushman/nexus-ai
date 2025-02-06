@@ -3,19 +3,28 @@ import React, { useState } from 'react'
 import Entypo from '@expo/vector-icons/Entypo';
 import { router } from 'expo-router';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { doc, setDoc } from 'firebase/firestore';
 
 const LoginModal = () => {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [isSignIn, setisSignIn] = useState<boolean>(false)
+    const linkUidToFirestore = async (uid: string, email: string) => {
+        const val = doc(db, "users", uid);
+        await setDoc(
+          val,
+          { uid, email},
+          { merge: true }
+        )}
     const onPressNextForSignUp = async () => {
        try {
         createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
+        .then(async(userCredential) => {
           // Signed up 
           const user:any = userCredential.user;
+          await linkUidToFirestore(user.uid,user.email)
           Alert.alert('User created successfully',user.email)
           router.push('/Home')
           AsyncStorage.setItem('user',user.email);
@@ -46,9 +55,10 @@ const LoginModal = () => {
     const onPressNextForSignIn = async () => {
        try {
         signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
+        .then(async(userCredential) => {
           // Signed up 
           const user:any = userCredential.user;
+          await linkUidToFirestore(user.uid,user.email)
           Alert.alert('Signed in successfully',user.email)
           router.push('/Home')
           AsyncStorage.setItem('user',user.email);
