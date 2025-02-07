@@ -15,7 +15,7 @@ const LoginModal = () => {
         const val = doc(db, "users", uid);
         await setDoc(
           val,
-          { uid, email},
+          { uid, email, chats: [] },
           { merge: true }
         )}
     const onPressNextForSignUp = async () => {
@@ -52,13 +52,13 @@ const LoginModal = () => {
         Alert.alert(error)
        }
     }   
-    const onPressNextForSignIn = async () => {
+    const onPressNextForSignIn =  () => {
        try {
         signInWithEmailAndPassword(auth, email, password)
         .then(async(userCredential) => {
           // Signed up 
           const user:any = userCredential.user;
-          await linkUidToFirestore(user.uid,user.email)
+          // await linkUidToFirestore(user.uid,user.email)
           Alert.alert('Signed in successfully',user.email)
           router.push('/Home')
           AsyncStorage.setItem('user',user.email);

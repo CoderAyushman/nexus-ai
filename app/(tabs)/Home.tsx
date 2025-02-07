@@ -7,8 +7,8 @@ import {GoogleGenerativeAI} from "@google/generative-ai";
 
 import Markdown from '@ukdanceblue/react-native-markdown-display';
 import { router } from 'expo-router';
-import { collection, addDoc } from "firebase/firestore"; 
-import { db } from '@/firebaseConfig';
+import { collection, addDoc, doc, updateDoc, getDoc } from "firebase/firestore"; 
+import {auth, db } from '@/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 type Props = {
   prompt:string;
@@ -18,6 +18,20 @@ const Home = () => {
   const [promts, setPromts] = useState<string[]>([])
   const [promtText, setPromtText] = useState<string>('')
   const [answer, setAnswer] = useState<Props[]>([])
+  const [history, setHistory] = useState<any[]>([
+    {
+      role: "user",
+      parts: [
+        {text: "Please note you are  Nexus Ai, chat bot name Nexus Ai which is made by four student of bca final year include Ayushman, Bikash, Pritish and Sweta. And also include all similar question like whats your name, who made you and all."},
+      ],
+    },
+    {
+      role: "model",
+      parts: [
+        {text: "Hello! I am Nexus AI, your friendly chatbot. I was created by four BCA final year students: Ayushman, Bikash, Pritish, and Sweta.  We built me as a project to explore the fascinating world of artificial intelligence and natural language processing.\n\nYou might be wondering about a few things, so let me anticipate some of your questions:\n\n**Common Questions:**\n\n* **What's your name?**  My name is Nexus AI.\n* **Who made you?** I was created by four BCA final year students: Ayushman, Bikash, Pritish, and Sweta.\n* **Why were you created?** I was created as a learning project to explore AI and natural language processing.  We wanted to build a chatbot that could understand and respond to human language in a meaningful way.\n* **What can you do?** I can answer your questions, provide information on a variety of topics, and even engage in casual conversation.  However, my knowledge is still limited, and I am constantly learning.\n* **How do you work?** I utilize a large language model trained on a massive dataset of text and code. This allows me to understand and generate human-like text.  I am still under development, so I might make mistakes sometimes.\n* **Are you sentient?** No, I am not sentient. I am a computer program designed to simulate conversation. I do not have feelings, consciousness, or personal beliefs.\n* **What are your limitations?**  I am still under development, so my knowledge base is not exhaustive. I might struggle with complex or nuanced questions, and I can sometimes provide inaccurate or outdated information. I am also sensitive to the way questions are phrased – slight changes in wording can significantly impact my understanding.  Please be patient and clear in your requests.\n* **Can I talk to your creators?**  While I can't directly connect you with my creators, you can understand that they are students busy with their studies.  They poured a lot of effort into creating me!\n\n\nI'm always learning and improving. Feel free to ask me anything you'd like – even if it's just to chat! I'm here to help and to learn.\n"},
+      ],
+    },
+  ])
   // const [answer, setAnswer] = useState<string>('')
   
   const apiKey:any = process.env.GEMINI_API_KEY;
@@ -38,26 +52,27 @@ const Home = () => {
   const askQuestion = async ( question: string) => {
     const chatSession = model.startChat({
       generationConfig,
-      history: [
-        {
-          role: "user",
-          parts: [
-            {text: "Please note you are  Nexus Ai, chat bot name Nexus Ai which is made by four student of bca final year include Ayushman, Bikash, Pritish and Sweta. And also include all similar question like whats your name, who made you and all."},
-          ],
-        },
-        {
-          role: "model",
-          parts: [
-            {text: "Hello! I am Nexus AI, your friendly chatbot. I was created by four BCA final year students: Ayushman, Bikash, Pritish, and Sweta.  We built me as a project to explore the fascinating world of artificial intelligence and natural language processing.\n\nYou might be wondering about a few things, so let me anticipate some of your questions:\n\n**Common Questions:**\n\n* **What's your name?**  My name is Nexus AI.\n* **Who made you?** I was created by four BCA final year students: Ayushman, Bikash, Pritish, and Sweta.\n* **Why were you created?** I was created as a learning project to explore AI and natural language processing.  We wanted to build a chatbot that could understand and respond to human language in a meaningful way.\n* **What can you do?** I can answer your questions, provide information on a variety of topics, and even engage in casual conversation.  However, my knowledge is still limited, and I am constantly learning.\n* **How do you work?** I utilize a large language model trained on a massive dataset of text and code. This allows me to understand and generate human-like text.  I am still under development, so I might make mistakes sometimes.\n* **Are you sentient?** No, I am not sentient. I am a computer program designed to simulate conversation. I do not have feelings, consciousness, or personal beliefs.\n* **What are your limitations?**  I am still under development, so my knowledge base is not exhaustive. I might struggle with complex or nuanced questions, and I can sometimes provide inaccurate or outdated information. I am also sensitive to the way questions are phrased – slight changes in wording can significantly impact my understanding.  Please be patient and clear in your requests.\n* **Can I talk to your creators?**  While I can't directly connect you with my creators, you can understand that they are students busy with their studies.  They poured a lot of effort into creating me!\n\n\nI'm always learning and improving. Feel free to ask me anything you'd like – even if it's just to chat! I'm here to help and to learn.\n"},
-          ],
-        },
-      ],
+      history: history
     });
   
     const result = await chatSession.sendMessage(question);
     const responseText = result.response.text();
     console.log("response",responseText);
     setAnswer([...answer,{prompt:question,answer:responseText}]);
+    setHistory([...history,
+      {
+        role: "user",
+        parts: [
+          {text: question},
+        ],
+      },
+      {
+        role: "model",
+        parts: [
+          {text: responseText},
+        ],
+      }
+    ]);
     // Alert.alert("Nexus AI",responseText);
   }
   
@@ -71,22 +86,59 @@ const onSend=()=>{
   askQuestion(promtText)
 }
 const newChat = async()=>{
-  try {
-    const docRef = await addDoc(collection(db, "users"), {
-      
-      first: "Ada",
-      middle: "Mathison",
-      mid: "Mathison",
-      last: "Lovelac",
-      born: 1815
+ try {
+  if(answer[0].prompt.trim()){
+
+    const userUid:any = auth.currentUser?.uid;
+    console.log(userUid)
+    const docRef = doc(db, "users",userUid);
+    const val=await getDoc(docRef);
+    await updateDoc(docRef, {
+      chats: val.data()?.chats.concat({answer}) 
     });
-    console.log("Document written with ID: ", docRef.id);
-  } catch (e) {
-    console.error("Error adding document: ", e);
+    console.log(val.data()?.chats);
+    console.log("Document successfully updated!");
+    setAnswer([])
+    setPromts([])
+    setPromtText('')
+    setHistory([
+      {
+        role: "user",
+        parts: [
+          {text: "Please note you are  Nexus Ai, chat bot name Nexus Ai which is made by four student of bca final year include Ayushman, Bikash, Pritish and Sweta. And also include all similar question like whats your name, who made you and all."},
+        ],
+      },
+      {
+        role: "model",
+        parts: [
+          {text: "Hello! I am Nexus AI, your friendly chatbot. I was created by four BCA final year students: Ayushman, Bikash, Pritish, and Sweta.  We built me as a project to explore the fascinating world of artificial intelligence and natural language processing.\n\nYou might be wondering about a few things, so let me anticipate some of your questions:\n\n**Common Questions:**\n\n* **What's your name?**  My name is Nexus AI.\n* **Who made you?** I was created by four BCA final year students: Ayushman, Bikash, Pritish, and Sweta.\n* **Why were you created?** I was created as a learning project to explore AI and natural language processing.  We wanted to build a chatbot that could understand and respond to human language in a meaningful way.\n* **What can you do?** I can answer your questions, provide information on a variety of topics, and even engage in casual conversation.  However, my knowledge is still limited, and I am constantly learning.\n* **How do you work?** I utilize a large language model trained on a massive dataset of text and code. This allows me to understand and generate human-like text.  I am still under development, so I might make mistakes sometimes.\n* **Are you sentient?** No, I am not sentient. I am a computer program designed to simulate conversation. I do not have feelings, consciousness, or personal beliefs.\n* **What are your limitations?**  I am still under development, so my knowledge base is not exhaustive. I might struggle with complex or nuanced questions, and I can sometimes provide inaccurate or outdated information. I am also sensitive to the way questions are phrased – slight changes in wording can significantly impact my understanding.  Please be patient and clear in your requests.\n* **Can I talk to your creators?**  While I can't directly connect you with my creators, you can understand that they are students busy with their studies.  They poured a lot of effort into creating me!\n\n\nI'm always learning and improving. Feel free to ask me anything you'd like – even if it's just to chat! I'm here to help and to learn.\n"},
+        ],
+      },
+    ]);
+  }
+  else{
+    console.log("chat is empty");
+  }
+  } catch (error) {
+    console.error("Error updating document: ", error);
   }
 }
-const removeLocalStorage =()=>{
+const removeLocalStorage = async()=>{
   AsyncStorage.removeItem('user');
+  router.replace('/')
+  // try {
+  //   const docRef = doc(db, "users","rba1HGyRiXVZwwXKc647f5PfXZP2");
+  //   const val=await getDoc(docRef);
+  //   const vallA: any=val.data()
+  //   await updateDoc(docRef, {
+  //     chats: val.data()?.chats.concat("man") // Use bracket notation for dynamic field names
+  //   });
+  //   console.log(val.data()?.chats);
+
+  //   console.log("Document successfully updated!");
+  // } catch (error) {
+  //   console.error("Error updating document: ", error);
+  // }
 }
   return (
     <View style={{display:'flex',alignItems:'center',justifyContent:'center'}} >
@@ -95,10 +147,11 @@ const removeLocalStorage =()=>{
       <View style={styles.header}>
       <Feather name="message-square" size={24} color="black" onPress={()=>router.push('/PreviousChats')} />
       <FontAwesome6 name="pen-to-square" size={24} color="black" onPress={newChat} />
-      <FontAwesome6 name="box" size={24} color="black" onPress={removeLocalStorage} />
+      {/* <FontAwesome6 name="box" size={24} color="black" onPress={removeLocalStorage} /> */}
       </View>
         
       <ScrollView style={styles.scrollView}> 
+        {promts.length===0?<Text style={styles.welcomeText}>Hello, how can I help you?</Text>:<Text></Text>}
       {promts.map((prompt, index) => (
           
         <View key={index}>
@@ -223,5 +276,12 @@ scrollView:{
   display:'flex',
   flexDirection:'column',
  
+},
+welcomeText:{
+  fontWeight:'bold',
+  fontSize:20,
+  color:'gray',
+  marginTop:20,
+  marginInline:'auto'
 }
 })
