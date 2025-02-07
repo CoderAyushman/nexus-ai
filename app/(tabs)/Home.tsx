@@ -147,7 +147,7 @@ const removeLocalStorage = async()=>{
       <View style={styles.header}>
       <Feather name="message-square" size={24} color="black" onPress={()=>router.push('/PreviousChats')} />
       <FontAwesome6 name="pen-to-square" size={24} color="black" onPress={newChat} />
-      {/* <FontAwesome6 name="box" size={24} color="black" onPress={removeLocalStorage} /> */}
+      <FontAwesome6 name="box" size={24} color="black" onPress={removeLocalStorage} />
       </View>
         
       <ScrollView style={styles.scrollView}> 
