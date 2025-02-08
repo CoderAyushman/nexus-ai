@@ -6,15 +6,19 @@ import { useEffect, useState } from 'react';
 import {GoogleGenerativeAI} from "@google/generative-ai";
 
 import Markdown from '@ukdanceblue/react-native-markdown-display';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import {  doc, updateDoc, getDoc } from "firebase/firestore"; 
 import {auth, db } from '@/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 type Props = {
   prompt:string;
   answer:string;
 }
 const Home = () => {
+ const {index} = useLocalSearchParams();
+
+
   const [promts, setPromts] = useState<string[]>([])
   const [promtText, setPromtText] = useState<string>('')
   const [answer, setAnswer] = useState<Props[]>([])
@@ -34,11 +38,11 @@ const Home = () => {
   ])
   // const [answer, setAnswer] = useState<string>('')
   
-  const apiKey:any = process.env.GEMINI_API_KEY;
-  const genAI = new GoogleGenerativeAI('AIzaSyCfF6tzrHFpvCj6upC1OfWGjpb7WGjGm-U' );
+  const apiKey:any = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+  const genAI = new GoogleGenerativeAI(apiKey);
   
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash-exp",
+    model: "gemini-2.0-flash-exp",  
   });
   
   const generationConfig = {
@@ -76,11 +80,9 @@ const Home = () => {
     // Alert.alert("Nexus AI",responseText);
   }
   
-useEffect(() => {
-  console.log(promtText);
-}, [promtText])
+  
 const onSend=()=>{
-  console.log(promtText);
+  // console.log(promtText);
   setPromtText('')
   setPromts([...promts,promtText.trim()])
   askQuestion(promtText)
@@ -167,6 +169,9 @@ const currentChat=async()=>{
 useEffect(() => {
   currentChat();
 },[])
+useEffect(() => {
+  console.log("index",index);
+},[index])
   return (
     <View style={{display:'flex',alignItems:'center',justifyContent:'center'}} >
       <ImageBackground style={styles.image}  source={require('../../assets/images/logobw.png')} /> 

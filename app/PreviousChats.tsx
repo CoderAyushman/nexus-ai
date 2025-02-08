@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { router } from 'expo-router';
@@ -7,6 +7,8 @@ import { doc, getDoc } from "firebase/firestore";
 import Feather from '@expo/vector-icons/Feather';
 import { useVideoPlayer } from 'expo-video';
 import * as Progress from 'react-native-progress';
+import index from './index';
+
 type Props = {
   prompt:string;
   answer:string;
@@ -34,15 +36,19 @@ const PreviousChats = () => {
     fetchChats();
     setIsPrevChat(false)
   }, [])
+  const openChat=async(index:number)=>{
+    console.log(index);
+    router.push({pathname:'/Home',params:{index}})
+  }
   return (
     <View style={styles.madal}>
       <AntDesign style={{position:'absolute',right:20,top:20}} name="closesquareo" size={24} color="white" onPress={()=>{router.back()}} />
       <ScrollView style={styles.scroll}>
         { isPrevChat?answer.length>0 ? answer.map((item,index)=>(
-          <View key={index} style={styles.chat}>
+          <TouchableOpacity key={index} style={styles.chat} onPress={()=>openChat(index)}>
           <Feather name="message-square" size={24} color="white" onPress={()=>router.push('/PreviousChats')} />
-          <Text style={styles.text}>{item.answer[0].prompt}</Text>
-          </View>
+          <Text style={styles.text} >{item.answer[0].prompt}</Text>
+          </TouchableOpacity>
         )):<Text style={{color:'white',fontSize:20,margin:'auto',alignSelf:'center'}}>No Previous Chats</Text>: <Progress.Circle style={{margin:'auto',alignSelf:'center'}} color="white"  size={50} indeterminate={true} borderWidth={5}   />}
       </ScrollView>
     </View>
