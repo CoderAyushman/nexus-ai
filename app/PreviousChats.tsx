@@ -5,32 +5,45 @@ import { router } from 'expo-router';
 import {auth, db } from '@/firebaseConfig';
 import { doc, getDoc } from "firebase/firestore"; 
 import Feather from '@expo/vector-icons/Feather';
+import { useVideoPlayer } from 'expo-video';
+import * as Progress from 'react-native-progress';
 type Props = {
   prompt:string;
   answer:string;
 }
 const PreviousChats = () => {
+  const player = useVideoPlayer('./assets/images/animationgif.gif', player => {
+    player.loop = true;
+    player.play();
+    player.allowsExternalPlayback = false;
+  });
   const [answer, setAnswer] = useState<any[]>([])
+  const [isPrevChat,setIsPrevChat]=useState(false)
   const fetchChats=async()=>{
     const docRef = doc(db, "users", auth.currentUser?.uid!);
     const val=await getDoc(docRef);
-    setAnswer(val.data()?.chats)
-    console.log(val.data()?.chats);
-    
+    if(val.data()?.chats.length>0){
+      setAnswer(val.data()?.chats)
+      console.log(val.data()?.chats);
+    }
+    setTimeout(() => {
+      setIsPrevChat(true)
+    }, 800);
   }
   useEffect( () => {
     fetchChats();
+    setIsPrevChat(false)
   }, [])
   return (
     <View style={styles.madal}>
       <AntDesign style={{position:'absolute',right:20,top:20}} name="closesquareo" size={24} color="white" onPress={()=>{router.back()}} />
       <ScrollView style={styles.scroll}>
-        {answer.length>0 ? answer.map((item,index)=>(
+        { isPrevChat?answer.length>0 ? answer.map((item,index)=>(
           <View key={index} style={styles.chat}>
           <Feather name="message-square" size={24} color="white" onPress={()=>router.push('/PreviousChats')} />
           <Text style={styles.text}>{item.answer[0].prompt}</Text>
           </View>
-        )):<Text style={{color:'white',fontSize:20,margin:'auto',alignSelf:'center'}}>No Previous Chats</Text>}
+        )):<Text style={{color:'white',fontSize:20,margin:'auto',alignSelf:'center'}}>No Previous Chats</Text>: <Progress.Circle style={{margin:'auto',alignSelf:'center'}} color="white"  size={50} indeterminate={true} borderWidth={5}   />}
       </ScrollView>
     </View>
   )

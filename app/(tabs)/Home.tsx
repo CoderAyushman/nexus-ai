@@ -1,4 +1,4 @@
-import { View, Text ,TextInput,ImageBackground,StyleSheet,ScrollView, Image, Alert, SafeAreaView} from 'react-native'
+import { View, Text ,TextInput,ImageBackground,StyleSheet,ScrollView, Image} from 'react-native'
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -7,7 +7,7 @@ import {GoogleGenerativeAI} from "@google/generative-ai";
 
 import Markdown from '@ukdanceblue/react-native-markdown-display';
 import { router } from 'expo-router';
-import { collection, addDoc, doc, updateDoc, getDoc } from "firebase/firestore"; 
+import {  doc, updateDoc, getDoc } from "firebase/firestore"; 
 import {auth, db } from '@/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 type Props = {
@@ -35,7 +35,7 @@ const Home = () => {
   // const [answer, setAnswer] = useState<string>('')
   
   const apiKey:any = process.env.GEMINI_API_KEY;
-  const genAI = new GoogleGenerativeAI('AIzaSyCfF6tzrHFpvCj6upC1OfWGjpb7WGjGm-U')
+  const genAI = new GoogleGenerativeAI('AIzaSyCfF6tzrHFpvCj6upC1OfWGjpb7WGjGm-U' );
   
   const model = genAI.getGenerativeModel({
     model: "gemini-2.0-flash-exp",
@@ -87,7 +87,7 @@ const onSend=()=>{
 }
 const newChat = async()=>{
  try {
-  if(answer[0].prompt.trim()){
+  if(answer[0]?.prompt.trim()){
 
     const userUid:any = auth.currentUser?.uid;
     console.log(userUid)
@@ -115,6 +115,8 @@ const newChat = async()=>{
         ],
       },
     ]);
+    AsyncStorage.removeItem('answer');
+    AsyncStorage.removeItem('promts');
   }
   else{
     console.log("chat is empty");
@@ -140,6 +142,31 @@ const removeLocalStorage = async()=>{
   //   console.error("Error updating document: ", error);
   // }
 }
+useEffect(() => {
+  if(answer.length>0 && promts.length>0){
+    console.log("ans",answer);
+    console.log("prom",promts); 
+    AsyncStorage.setItem('answer',JSON.stringify(answer));
+    AsyncStorage.setItem('prompts',JSON.stringify(promts));
+  }
+},[answer])
+const currentChat=async()=>{
+  const ans:any= await AsyncStorage.getItem('answer');
+  const prom:any=await AsyncStorage.getItem('prompts');
+  console.log(ans,prom);
+  if(ans[0] && prom[0]){
+    console.log("ans",ans);
+    console.log("prom",prom);
+  const answer:any=JSON.parse(ans)
+  const prompts:any=JSON.parse(prom)
+    setAnswer(answer)
+    setPromts(prompts)
+  //   console.log(ans)
+  }
+}
+useEffect(() => {
+  currentChat();
+},[])
   return (
     <View style={{display:'flex',alignItems:'center',justifyContent:'center'}} >
       <ImageBackground style={styles.image}  source={require('../../assets/images/logobw.png')} /> 
@@ -147,7 +174,7 @@ const removeLocalStorage = async()=>{
       <View style={styles.header}>
       <Feather name="message-square" size={24} color="black" onPress={()=>router.push('/PreviousChats')} />
       <FontAwesome6 name="pen-to-square" size={24} color="black" onPress={newChat} />
-      <FontAwesome6 name="box" size={24} color="black" onPress={removeLocalStorage} />
+      {/* <FontAwesome6 name="box" size={24} color="black" onPress={removeLocalStorage} /> */}
       </View>
         
       <ScrollView style={styles.scrollView}> 
@@ -169,7 +196,7 @@ const removeLocalStorage = async()=>{
       </ScrollView>
       
       <View style={styles.footer}>
-        <TextInput style={{marginLeft:20,maxWidth:200}} multiline disableFullscreenUI  placeholder='Message' onChangeText={setPromtText} value={promtText}/>
+        <TextInput style={{marginLeft:20,width:'75%'}} multiline disableFullscreenUI  placeholder='Message' onChangeText={setPromtText} value={promtText}/>
         {promtText.trim()? <AntDesign style={{marginRight:20,padding:10,backgroundColor:"black",borderRadius:30,position:'absolute',right:0}} name="arrowup" size={24} color="white" onPress={onSend} />:<AntDesign style={{marginRight:20,padding:10,backgroundColor:"#cccaca",borderRadius:30,position:'absolute',right:0}} name="arrowup" size={24} color="white" />}
       </View>
     </View>
