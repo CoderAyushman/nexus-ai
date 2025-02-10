@@ -14,11 +14,6 @@ type Props = {
   answer:string;
 }
 const PreviousChats = () => {
-  const player = useVideoPlayer('./assets/images/animationgif.gif', player => {
-    player.loop = true;
-    player.play();
-    player.allowsExternalPlayback = false;
-  });
   const [answer, setAnswer] = useState<any[]>([])
   const [isPrevChat,setIsPrevChat]=useState(false)
   const fetchChats=async()=>{
@@ -47,7 +42,7 @@ const PreviousChats = () => {
         { isPrevChat?answer.length>0 ? answer.map((item,index)=>(
           <TouchableOpacity key={index} style={styles.chat} onPress={()=>openChat(index)}>
           <Feather name="message-square" size={24} color="white" onPress={()=>router.push('/PreviousChats')} />
-          <Text style={styles.text} >{item.answer[0].prompt}</Text>
+          <Text style={styles.text} >{item.prompts[0]}</Text>
           </TouchableOpacity>
         )):<Text style={{color:'white',fontSize:20,margin:'auto',alignSelf:'center'}}>No Previous Chats</Text>: <Progress.Circle style={{margin:'auto',alignSelf:'center'}} color="white"  size={50} indeterminate={true} borderWidth={5}   />}
       </ScrollView>
@@ -66,14 +61,17 @@ const styles=StyleSheet.create({
     marginTop:50,
     borderTopStartRadius:30,
     borderTopEndRadius:30,
-    display:'flex',
-    flexDirection:'column',
+    // display:'flex',
+    // flexDirection:'row',
     alignItems:'center',
-    justifyContent:'center'
+    justifyContent:'center',
+    paddingBottom:70
   },
   text:{
     color:'white',
-    fontWeight:'bold'
+    fontWeight:'bold',
+    // zIndex:10
+
 
   },
   scroll:{
@@ -81,7 +79,8 @@ const styles=StyleSheet.create({
     height:'100%',
     marginTop:100,
     marginInline:20,
-
+    display:'flex',
+  flexDirection:'column',
   },
   chat:{
     backgroundColor:'#3C3B3B',

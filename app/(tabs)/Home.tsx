@@ -10,18 +10,20 @@ import { router, useLocalSearchParams } from 'expo-router';
 import {  doc, updateDoc, getDoc } from "firebase/firestore"; 
 import {auth, db } from '@/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Progress from 'react-native-progress';
 
 type Props = {
   prompt:string;
   answer:string;
 }
 const Home = () => {
- const {index} = useLocalSearchParams();
+ const {index}:any = useLocalSearchParams();
 
-
-  const [promts, setPromts] = useState<string[]>([])
-  const [promtText, setPromtText] = useState<string>('')
-  const [answer, setAnswer] = useState<Props[]>([])
+  
+  const [prompts, setPrompts] = useState<string[]>([])
+  const [promptText, setPromptText] = useState<string>('')
+  const [answer, setAnswer] = useState<string[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
   const [history, setHistory] = useState<any[]>([
     {
       role: "user",
@@ -62,7 +64,7 @@ const Home = () => {
     const result = await chatSession.sendMessage(question);
     const responseText = result.response.text();
     console.log("response",responseText);
-    setAnswer([...answer,{prompt:question,answer:responseText}]);
+    setAnswer([...answer,responseText]);
     setHistory([...history,
       {
         role: "user",
@@ -82,27 +84,27 @@ const Home = () => {
   
   
 const onSend=()=>{
-  // console.log(promtText);
-  setPromtText('')
-  setPromts([...promts,promtText.trim()])
-  askQuestion(promtText)
+  // console.log(promptText);
+  setPromptText('')
+  setPrompts([...prompts,promptText.trim()])
+  askQuestion(promptText)
 }
 const newChat = async()=>{
  try {
-  if(answer[0]?.prompt.trim()){
-
+  if(answer[0]?.trim()){
+    setLoading(true)
     const userUid:any = auth.currentUser?.uid;
     console.log(userUid)
     const docRef = doc(db, "users",userUid);
     const val=await getDoc(docRef);
     await updateDoc(docRef, {
-      chats: val.data()?.chats.concat({answer}) 
+      chats: val.data()?.chats.concat({prompts:prompts,answers:answer}) 
     });
     console.log(val.data()?.chats);
     console.log("Document successfully updated!");
     setAnswer([])
-    setPromts([])
-    setPromtText('')
+    setPrompts([])
+    setPromptText('')
     setHistory([
       {
         role: "user",
@@ -118,7 +120,8 @@ const newChat = async()=>{
       },
     ]);
     AsyncStorage.removeItem('answer');
-    AsyncStorage.removeItem('promts');
+    AsyncStorage.removeItem('prompts');
+    setLoading(false)
   }
   else{
     console.log("chat is empty");
@@ -128,8 +131,9 @@ const newChat = async()=>{
   }
 }
 const removeLocalStorage = async()=>{
-  AsyncStorage.removeItem('user');
-  router.replace('/')
+  AsyncStorage.removeItem('answer');
+  AsyncStorage.removeItem('prompts');
+  // router.replace('/')
   // try {
   //   const docRef = doc(db, "users","rba1HGyRiXVZwwXKc647f5PfXZP2");
   //   const val=await getDoc(docRef);
@@ -145,11 +149,11 @@ const removeLocalStorage = async()=>{
   // }
 }
 useEffect(() => {
-  if(answer.length>0 && promts.length>0){
+  if(answer.length>0 && prompts.length>0){
     console.log("ans",answer);
-    console.log("prom",promts); 
+    console.log("prom",prompts); 
     AsyncStorage.setItem('answer',JSON.stringify(answer));
-    AsyncStorage.setItem('prompts',JSON.stringify(promts));
+    AsyncStorage.setItem('prompts',JSON.stringify(prompts));
   }
 },[answer])
 const currentChat=async()=>{
@@ -162,15 +166,26 @@ const currentChat=async()=>{
   const answer:any=JSON.parse(ans)
   const prompts:any=JSON.parse(prom)
     setAnswer(answer)
-    setPromts(prompts)
+    setPrompts(prompts)
   //   console.log(ans)
   }
 }
 useEffect(() => {
   currentChat();
 },[])
+
+const chatFetcher=async(index:any)=>{
+  const docRef = doc(db, "users", auth.currentUser?.uid!);
+  const val=await getDoc(docRef);
+  if(val.data()?.chats[index]){
+    setAnswer(val.data()?.chats[index]?.answers)
+    setPrompts(val.data()?.chats[index]?.prompts)
+  }
+
+}
 useEffect(() => {
   console.log("index",index);
+  chatFetcher(index);
 },[index])
   return (
     <View style={{display:'flex',alignItems:'center',justifyContent:'center'}} >
@@ -183,8 +198,9 @@ useEffect(() => {
       </View>
         
       <ScrollView style={styles.scrollView}> 
-        {promts.length===0?<Text style={styles.welcomeText}>Hello, how can I help you?</Text>:<Text></Text>}
-      {promts.map((prompt, index) => (
+        {prompts.length===0?<Text style={styles.welcomeText}>Hello, how can I help you?</Text>:<Text></Text>}
+        {loading && <Progress.Circle style={styles.loading} color="gray"  size={100} indeterminate={true} borderWidth={10}   />}
+      {prompts.map((prompt, index) => (
           
         <View key={index}>
          <View  style={styles.promptArea}>
@@ -193,7 +209,7 @@ useEffect(() => {
         </View>
        <View style={styles.promptAnswerArea}>
        <Image style={{width:32,height:30}} source={require('../../assets/images/splash.png')} />
-       <Text style={styles.promptAnswer}><Markdown>{answer[index]?.answer}</Markdown></Text>
+       <Text style={styles.promptAnswer}><Markdown>{answer[index]}</Markdown></Text>
        </View>
        </View>
      
@@ -201,8 +217,8 @@ useEffect(() => {
       </ScrollView>
       
       <View style={styles.footer}>
-        <TextInput style={{marginLeft:20,width:'75%'}} multiline disableFullscreenUI  placeholder='Message' onChangeText={setPromtText} value={promtText}/>
-        {promtText.trim()? <AntDesign style={{marginRight:20,padding:10,backgroundColor:"black",borderRadius:30,position:'absolute',right:0}} name="arrowup" size={24} color="white" onPress={onSend} />:<AntDesign style={{marginRight:20,padding:10,backgroundColor:"#cccaca",borderRadius:30,position:'absolute',right:0}} name="arrowup" size={24} color="white" />}
+        <TextInput style={{marginLeft:20,width:'75%'}} multiline disableFullscreenUI  placeholder='Message' onChangeText={setPromptText} value={promptText}/>
+        {promptText.trim()? <AntDesign style={{marginRight:20,padding:10,backgroundColor:"black",borderRadius:30,position:'absolute',right:0}} name="arrowup" size={24} color="white" onPress={onSend} />:<AntDesign style={{marginRight:20,padding:10,backgroundColor:"#cccaca",borderRadius:30,position:'absolute',right:0}} name="arrowup" size={24} color="white" />}
       </View>
     </View>
     </View>
@@ -315,5 +331,13 @@ welcomeText:{
   color:'gray',
   marginTop:20,
   marginInline:'auto'
+},
+loading:{
+  // width:'100%',
+  position:'absolute',
+  // margin:'auto',
+  alignSelf:'center',
+  marginTop:100,
+  zIndex:20
 }
 })
