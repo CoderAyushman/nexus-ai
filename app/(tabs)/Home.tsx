@@ -167,7 +167,7 @@ const currentChat=async()=>{
   const prompts:any=JSON.parse(prom)
     setAnswer(answer)
     setPrompts(prompts)
-  //   console.log(ans)
+ 
   }
 }
 useEffect(() => {

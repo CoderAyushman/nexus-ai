@@ -3,24 +3,23 @@ import React, { useEffect, useState } from 'react'
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { router } from 'expo-router';
 import {auth, db } from '@/firebaseConfig';
-import { doc, getDoc } from "firebase/firestore"; 
+import { arrayRemove, doc, getDoc, updateDoc } from "firebase/firestore"; 
 import Feather from '@expo/vector-icons/Feather';
-import { useVideoPlayer } from 'expo-video';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Progress from 'react-native-progress';
-import index from './index';
 
 type Props = {
   prompt:string;
-  answer:string;
+  promts:string;
 }
 const PreviousChats = () => {
-  const [answer, setAnswer] = useState<any[]>([])
+  const [promts, setPromts] = useState<any[]>([])
   const [isPrevChat,setIsPrevChat]=useState(false)
   const fetchChats=async()=>{
     const docRef = doc(db, "users", auth.currentUser?.uid!);
     const val=await getDoc(docRef);
     if(val.data()?.chats.length>0){
-      setAnswer(val.data()?.chats)
+      setPromts(val.data()?.chats)
       console.log(val.data()?.chats);
     }
     setTimeout(() => {
@@ -35,16 +34,37 @@ const PreviousChats = () => {
     console.log(index);
     router.push({pathname:'/Home',params:{index}})
   }
+  const deleteChat=async(index:number)=>{
+    console.log('chat deleted at index',index);
+    try {
+    const docRef = doc(db, "users", auth.currentUser?.uid!);
+    const chats:any=await getDoc(docRef);
+      await updateDoc(docRef, {
+      chats: arrayRemove(chats.data()?.chats[index]) // Use bracket notation for dynamic field names
+    });
+    if(promts.length==1){
+      setPromts([]);
+    }
+    else{
+
+      fetchChats();
+    }
+    
+    } catch (error) {
+      console.log(error)
+    }
+  }
   return (
     <View style={styles.madal}>
       <AntDesign style={{position:'absolute',right:20,top:20}} name="closesquareo" size={24} color="white" onPress={()=>{router.back()}} />
       <ScrollView style={styles.scroll}>
-        { isPrevChat?answer.length>0 ? answer.map((item,index)=>(
-          <TouchableOpacity key={index} style={styles.chat} onPress={()=>openChat(index)}>
-          <Feather name="message-square" size={24} color="white" onPress={()=>router.push('/PreviousChats')} />
-          <Text style={styles.text} >{item.prompts[0]}</Text>
-          </TouchableOpacity>
-        )):<Text style={{color:'white',fontSize:20,margin:'auto',alignSelf:'center'}}>No Previous Chats</Text>: <Progress.Circle style={{margin:'auto',alignSelf:'center'}} color="white"  size={50} indeterminate={true} borderWidth={5}   />}
+        { isPrevChat?(promts.length>0 ? promts.toReversed().map((item,index)=>(
+          <View key={index} style={styles.chat} >
+          <Feather name="message-square" size={24} color="white" />
+          <Text style={styles.text}  onPress={()=>openChat(index)}>{item.prompts[0]}</Text>
+          <Ionicons name="trash-bin-outline" size={24}  color="white" onPress={()=>deleteChat(promts.length-1-index)} />
+          </View>
+        )):<Text style={{color:'white',fontSize:20,margin:'auto',alignSelf:'center'}}>No Previous Chats</Text>): (<Progress.Circle style={{margin:'auto',alignSelf:'center'}} color="white"  size={50} indeterminate={true} borderWidth={5}   />)}
       </ScrollView>
     </View>
   )
@@ -70,8 +90,7 @@ const styles=StyleSheet.create({
   text:{
     color:'white',
     fontWeight:'bold',
-    // zIndex:10
-
+    width:'70%',
 
   },
   scroll:{
@@ -92,5 +111,6 @@ const styles=StyleSheet.create({
     alignItems:'center',
     // justifyContent:'space-between'
     gap:20
-  }
+  },
+
 })
