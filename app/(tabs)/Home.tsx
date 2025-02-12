@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import AntDesign from "@expo/vector-icons/AntDesign";
 import { useEffect, useState } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Markdown from "@ukdanceblue/react-native-markdown-display";
@@ -18,9 +17,10 @@ import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Progress from "react-native-progress";
-
+import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 const Home = () => {
-  const { index }: any = useLocalSearchParams();
+  var { index }: any = useLocalSearchParams();
   const [prompts, setPrompts] = useState<string[]>([]);
   const [promptText, setPromptText] = useState<string>("");
   const [answer, setAnswer] = useState<string[]>([]);
@@ -94,6 +94,7 @@ const Home = () => {
     try {
       if (answer[0]?.trim()) {
         setLoading(true);
+
         const userUid: any = auth.currentUser?.uid;
         console.log(userUid);
         const docRef = doc(db, "users", userUid);
@@ -105,6 +106,9 @@ const Home = () => {
         });
         console.log(val.data()?.chats);
         console.log("Document successfully updated!");
+        AsyncStorage.removeItem("answer");
+        AsyncStorage.removeItem("prompts");
+
         setAnswer([]);
         setPrompts([]);
         setPromptText("");
@@ -126,8 +130,7 @@ const Home = () => {
             ],
           },
         ]);
-        AsyncStorage.removeItem("answer");
-        AsyncStorage.removeItem("prompts");
+
         setLoading(false);
       } else {
         console.log("chat is empty");
@@ -136,23 +139,13 @@ const Home = () => {
       console.error("Error updating document: ", error);
     }
   };
-  const removeLocalStorage = async () => {
+  const clearAnswer = async () => {
+    setAnswer([]);
+    setPrompts([]);
     AsyncStorage.removeItem("answer");
     AsyncStorage.removeItem("prompts");
-    // router.replace('/')
-    // try {
-    //   const docRef = doc(db, "users","rba1HGyRiXVZwwXKc647f5PfXZP2");
-    //   const val=await getDoc(docRef);
-    //   const vallA: any=val.data()
-    //   await updateDoc(docRef, {
-    //     chats: val.data()?.chats.concat("man") // Use bracket notation for dynamic field names
-    //   });
-    //   console.log(val.data()?.chats);
-
-    //   console.log("Document successfully updated!");
-    // } catch (error) {
-    //   console.error("Error updating document: ", error);
-    // }
+    console.log("Chat cleared");
+    console.log("local storage deleted");
   };
   useEffect(() => {
     if (answer.length > 0 && prompts.length > 0) {
@@ -163,17 +156,34 @@ const Home = () => {
     }
   }, [answer]);
   const currentChat = async () => {
-    const ans: any = await AsyncStorage.getItem("answer");
-    const prom: any = await AsyncStorage.getItem("prompts");
-    console.log(ans, prom);
-    if (ans[0] && prom[0]) {
-      console.log("ans", ans);
-      console.log("prom", prom);
-      const answer: any = JSON.parse(ans);
-      const prompts: any = JSON.parse(prom);
-      setAnswer(answer);
-      setPrompts(prompts);
+    try {
+      const ans: any = await AsyncStorage.getItem("answer");
+      const prom: any = await AsyncStorage.getItem("prompts");
+      console.log(ans, prom);
+      if (ans[0] && prom[0]) {
+        console.log("ans", ans);
+        console.log("prom", prom);
+        const answer: any = JSON.parse(ans);
+        const prompts: any = JSON.parse(prom);
+
+        const userUid: any = auth.currentUser?.uid;
+        console.log(userUid);
+        const docRef = doc(db, "users", userUid);
+        const val = await getDoc(docRef);
+        await updateDoc(docRef, {
+          chats: val
+            .data()
+            ?.chats.concat({ prompts: prompts, answers: answer }),
+        });
+        console.log(val.data()?.chats);
+        AsyncStorage.removeItem("answer");
+        AsyncStorage.removeItem("prompts");
+        console.log("Document successfully updated!");
+    }} catch (error) {
+      console.log(error);
     }
+      
+    
   };
   useEffect(() => {
     currentChat();
@@ -211,13 +221,20 @@ const Home = () => {
             color="black"
             onPress={() => router.push("/PreviousChats")}
           />
+          {answer.length > 0 && 
+         <MaterialCommunityIcons name="note-remove-outline" size={28} color="black" onPress={clearAnswer} />}
           <FontAwesome6
             name="pen-to-square"
             size={24}
             color="black"
             onPress={newChat}
           />
-          {/* <FontAwesome6 name="box" size={24} color="black" onPress={removeLocalStorage} /> */}
+          {/* <FontAwesome6
+            name="box"
+            size={24}
+            color="black"
+            onPress={removeLocalStorage}
+          /> */}
         </View>
 
         <ScrollView style={styles.scrollView}>
@@ -405,9 +422,11 @@ const styles = StyleSheet.create({
   loading: {
     // width:'100%',
     position: "absolute",
-    margin: "auto",
-    // alignSelf:'center',
+    // marginInline: "auto",
+    alignSelf:'center',
+    marginTop: 130,
     // marginBlock:'auto',
     zIndex: 20,
+    
   },
 });

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { router } from 'expo-router';
@@ -37,18 +37,19 @@ const PreviousChats = () => {
   const deleteChat=async(index:number)=>{
     console.log('chat deleted at index',index);
     try {
-    const docRef = doc(db, "users", auth.currentUser?.uid!);
-    const chats:any=await getDoc(docRef);
+      const docRef = doc(db, "users", auth.currentUser?.uid!);
+      const chats:any=await getDoc(docRef);
       await updateDoc(docRef, {
-      chats: arrayRemove(chats.data()?.chats[index]) // Use bracket notation for dynamic field names
-    });
-    if(promts.length==1){
-      setPromts([]);
-    }
-    else{
-
-      fetchChats();
-    }
+        chats: arrayRemove(chats.data().chats[index]) // Use bracket notation for dynamic field names
+      });
+      if(promts.length==1){
+        setPromts([]);
+      }
+      else{
+        
+        fetchChats();
+      }
+      
     
     } catch (error) {
       console.log(error)
