@@ -8,10 +8,7 @@ import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Progress from 'react-native-progress';
 
-type Props = {
-  prompt:string;
-  promts:string;
-}
+
 const PreviousChats = () => {
   const [promts, setPromts] = useState<any[]>([])
   const [isPrevChat,setIsPrevChat]=useState(false)
@@ -46,11 +43,9 @@ const PreviousChats = () => {
         setPromts([]);
       }
       else{
-        
         fetchChats();
       }
       
-    
     } catch (error) {
       console.log(error)
     }

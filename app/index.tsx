@@ -43,7 +43,9 @@ SplashScreen.preventAutoHideAsync()
 
   return (
     <View style={styles.container} >
-        <GetStarted />      
+        <GetStarted />
+        
+
     </View>
   )
 }

@@ -4,8 +4,9 @@ import {
   Image,
   StyleSheet,
   TextInput,
+  ToastAndroid
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -14,16 +15,21 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Picker } from "@react-native-picker/picker";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/firebaseConfig";
+import { router } from "expo-router";
+// import ToastManager, { Toast } from "toastify-react-native";
 const ImageGenerator = () => {
   const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
   const [imageUrl, setimageUrl] = useState<string>();
   const [selectedLanguage, setSelectedLanguage] = useState();
   const [prompts, setPrompts] = useState<string[]>([]);
-  const [promptText, setPromptText] = useState<any>();
-  const [randomPrompt, setRandomPrompt] = useState<any>();
-  const [width, setWidth] = useState<any>(1024);
-  const [height, setHeight] = useState<any>(1024);
+  const [promptText, setPromptText] = useState<any>('');
+  const [width, setWidth] = useState<any>('1024');
+  const [height, setHeight] = useState<any>('1024');
   const [model, setModel] = useState<any>("flux");
+  const [isImageGenerated, setIsImageGenerated] = useState<boolean>(false);
+  
   //ai api configuration
   const [history, setHistory] = useState<any[]>([
       {
@@ -86,29 +92,54 @@ const ImageGenerator = () => {
         const result = await chatSession.sendMessage("Give prompt for random image generation");
         const responseText = result.response.text();
         console.log("response", responseText);
-        setRandomPrompt(responseText);
+        setPromptText(responseText);
         
       } catch (error) {
         console.log(error)
       }
     };
-  const imgUrl = async (prompt: string, width: number, height: number,model:string) => {
-    console.log(prompt, width, height);
-    setRandomPrompt("");
-    const seed = 42;
-    if(width<=200 || width>=1024){
-      alert('Width should be greater than 200 and less than 1024')
+    const updateImageUrl=async(prompt:string,url:string)=>{
+      try {
+        const docRef = doc(db, "users", auth.currentUser?.uid!);
+        const val = (await getDoc(docRef)).data()?.ImageUrls;
+        await updateDoc(docRef, {
+          ImageUrls: val.concat({ prompt: prompt, url: url }),
+        }).then(() => {
+          console.log("Image url added successfully");
+        }).catch((error) => {
+          console.log(error);
+        })
+      } catch (error) {
+        console.log(error)
+      }
     }
-    else if(height<=200 || height>=1024){
-      alert('Height should be greater than 200 and less than 1024')
-    }
-    else{
-      
-      const response: any = await fetch(
-        `https://pollinations.ai/p/${prompt}?width=${width}&height=${height}&seed=${seed}&model=${model}&nologo=true`
-      );
-      console.log(response.url);
-      setimageUrl(response.url);
+  const imgUrl = async (promptText:string) => {
+    try {
+      setIsImageGenerated(false);
+      setPromptText('');
+      const seed = 42;
+      if(parseInt(width)<200 || parseInt(width)>1024){
+        alert('Width should be greater than 200 and less than 1024')
+      }
+      else if(parseInt(height)<200 || parseInt(height)>1024){
+        alert('Height should be greater than 200 and less than 1024')
+      }
+      else{
+        
+        await fetch(
+          `https://pollinations.ai/p/${promptText}?width=${width}&height=${height}&seed=${seed}&model=${model}&nologo=true`
+        ).then((res) => {
+          updateImageUrl(promptText,res.url)
+          setimageUrl(res.url);
+          setIsImageGenerated(true);
+        }).catch((error) => {
+          console.log(error);
+          setIsImageGenerated(false);
+        })
+        
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
   const downloadImage = async (uri: any) => {
@@ -124,6 +155,11 @@ const ImageGenerator = () => {
         )
           .then(({ uri }) => {
             console.log("Finished downloading to ", uri);
+            ToastAndroid.showWithGravity(
+              'Image successfully downloaded to your Gallery!',
+              ToastAndroid.LONG,
+              ToastAndroid.CENTER,
+            );
             MediaLibrary.saveToLibraryAsync(uri);
           })
           .catch((error) => {
@@ -134,17 +170,8 @@ const ImageGenerator = () => {
       console.log(error);
     }
   };
-//  const randomPromtGenerator=()=>{
-//    try {
-//     console.log('started');
 
-//    } catch (error) {
-//     console.log(error);
-//    }
-//  }
-useEffect(() => {
-  console.log(width,height,model);
-},[width,height,model]);
+
   return (
     <View style={styles.container}>
       <Entypo
@@ -152,17 +179,20 @@ useEffect(() => {
         name="folder-images"
         size={40}
         color="black"
+        onPress={() => {
+          router.push("/ImagesFetcher");
+        }}
       />
       <View>
         <View style={styles.image}>
           {imageUrl ? (
             <Image style={styles.image} source={{ uri: imageUrl }} />
           ) : (
-            <Ionicons name="image-outline" size={150} color="white" />
+            <View>
+              <Ionicons name="image-outline" size={150} color="white" />
+            </View>
           )}
         </View>
-        {/* <Text style={{fontSize:20,fontWeight:'bold',marginTop:10}} onPress={()=>imgUrl("Generate a high-resolution image of a breathtaking natural landscape. The scene should feature a lush green valley surrounded by towering mountains, with a crystal-clear river flowing through the center. The sky is a blend of warm sunset colors, casting a golden glow over the landscape. Mist gently rises from the water, and wildflowers in vibrant hues dot the grassy fields. The atmosphere should feel serene and untouched, evoking a sense of peace and wonder.",1024,1024)}>Click</Text>
-        <Text style={{fontSize:20,fontWeight:'bold',marginTop:10}} onPress={()=>downloadImage(imageUrl)}>Download</Text> */}
         <View style={styles.parameters}>
           <View
             style={{
@@ -175,9 +205,10 @@ useEffect(() => {
             <Text style={{ fontWeight: "bold" }}>width:</Text>
             <TextInput
               style={styles.parameterText}
-              defaultValue={width}
+              value={width}
+              keyboardType="numeric"
               onChangeText={setWidth}
-              placeholder="1024"
+              placeholder="width"
               maxLength={4}
             />
           </View>
@@ -192,9 +223,10 @@ useEffect(() => {
             <Text style={{ fontWeight: "bold" }}>height:</Text>
             <TextInput
               style={styles.parameterText}
-              defaultValue={height}
+              value={height}
+              keyboardType="numeric"
               onChangeText={setHeight}
-              placeholder="1024"
+              placeholder="height"
               maxLength={4}
             />
           </View>
@@ -230,10 +262,12 @@ useEffect(() => {
             </View>
           </View>
         </View>
-        <View style={styles.parameters}>
-         <Text style={{fontWeight:'bold',fontSize:20,paddingInline:20,paddingBlock:10,backgroundColor:'black',color:'white',width:140,textAlign:'center',borderRadius:15}}>download</Text>
-         <Text style={{fontWeight:'bold',fontSize:20,paddingInline:20,paddingBlock:10,backgroundColor:'black',color:'white',width:140,textAlign:'center',borderRadius:15}}>save</Text>
+        {isImageGenerated && (
+        <View style={styles.parameters}>  
+         <Text style={{fontWeight:'bold',fontSize:20,paddingInline:20,paddingBlock:10,backgroundColor:'black',color:'white',width:300,textAlign:'center',borderRadius:15}} onPress={()=>downloadImage(imageUrl)}>download</Text>
+         
         </View>
+          )}
       </View>
 
       <View
@@ -253,9 +287,9 @@ useEffect(() => {
           style={{ marginLeft: 20, width: "75%" }}
           multiline
           disableFullscreenUI
-          placeholder="Message"
+          placeholder="Prompt"
           onChangeText={setPromptText}
-          defaultValue={randomPrompt}
+          defaultValue={promptText}
           
         />
         {promptText?.trim() ? (
@@ -271,7 +305,7 @@ useEffect(() => {
             name="arrowup"
             size={24}
             color="white"
-            onPress={() => imgUrl(promptText, width, height,model)}
+            onPress={() => imgUrl(promptText)}
           />
         ) : (
           <MaterialIcons
@@ -308,8 +342,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     alignSelf: "flex-start",
     top: 30,
-    left: 30,
-    zIndex: 20,
+    left: 35,
+    // zIndex: 20,
   },
   image: {
     display: "flex",

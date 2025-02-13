@@ -217,7 +217,7 @@ const Home = () => {
         <View style={styles.header}>
           <Feather
             name="message-square"
-            size={24}
+            size={28}
             color="black"
             onPress={() => router.push("/PreviousChats")}
           />
@@ -229,12 +229,7 @@ const Home = () => {
             color="black"
             onPress={newChat}
           />
-          {/* <FontAwesome6
-            name="box"
-            size={24}
-            color="black"
-            onPress={removeLocalStorage}
-          /> */}
+         
         </View>
 
         <ScrollView style={styles.scrollView}>
@@ -255,14 +250,14 @@ const Home = () => {
           {prompts.map((prompt, index) => (
             <View key={index}>
               <View style={styles.promptArea}>
-                <Text style={styles.promptText}>{prompt}</Text>
+                <Text selectable style={styles.promptText}>{prompt}</Text>
               </View>
               <View style={styles.promptAnswerArea}>
                 <Image
                   style={{ width: 32, height: 30 }}
                   source={require("../../assets/images/splash.png")}
                 />
-                <Text style={styles.promptAnswer}>
+                <Text selectable style={styles.promptAnswer}>
                   <Markdown>{answer[index]}</Markdown>
                 </Text>
               </View>

@@ -15,7 +15,7 @@ const LoginModal = () => {
         const val = doc(db, "users", uid);
         await setDoc(
           val,
-          { uid, email, chats: [{prompts:[],answers:[]}] },
+          { uid, email, chats: [{prompts:[],answers:[]}],ImageUrls:[] },
           { merge: true }
         )}
     const onPressNextForSignUp = async () => {

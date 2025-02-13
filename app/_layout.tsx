@@ -1,6 +1,5 @@
 import { Stack } from 'expo-router';
 import { Outfit_400Regular,Outfit_500Medium,Outfit_700Bold, useFonts } from '@expo-google-fonts/outfit';
-import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect } from 'react'
 
 // SplashScreen.preventAutoHideAsync();
@@ -26,6 +25,8 @@ export default function RootLayout() {
       <Stack.Screen name="LoginPage"  options={{headerShown:false}}/>
       <Stack.Screen name="LoginModal"  options={{headerShown:false,presentation:'containedTransparentModal'}}/>
       <Stack.Screen name="PreviousChats"  options={{headerShown:false,presentation:'containedTransparentModal'}}/>
+      <Stack.Screen name="ImagesFetcher"  options={{headerShown:false,presentation:'containedTransparentModal'}}/>
+      <Stack.Screen name="SingleImageViewer"  options={{headerShown:false,presentation:'containedTransparentModal'}}/>
     </Stack>
   );
 }
