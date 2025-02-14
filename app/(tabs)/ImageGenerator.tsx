@@ -4,13 +4,13 @@ import {
   Image,
   StyleSheet,
   TextInput,
-  ToastAndroid
+  ToastAndroid,
 } from "react-native";
 import React, { useState } from "react";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 import Entypo from "@expo/vector-icons/Entypo";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Picker } from "@react-native-picker/picker";
 import AntDesign from "@expo/vector-icons/AntDesign";
@@ -18,125 +18,134 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/firebaseConfig";
 import { router } from "expo-router";
+import * as Progress from "react-native-progress";
 // import ToastManager, { Toast } from "toastify-react-native";
 const ImageGenerator = () => {
   const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
   const [imageUrl, setimageUrl] = useState<string>();
   const [selectedLanguage, setSelectedLanguage] = useState();
-  const [prompts, setPrompts] = useState<string[]>([]);
-  const [promptText, setPromptText] = useState<any>('');
-  const [width, setWidth] = useState<any>('1024');
-  const [height, setHeight] = useState<any>('1024');
+  const [promptText, setPromptText] = useState<any>("");
+  const [width, setWidth] = useState<any>("1024");
+  const [height, setHeight] = useState<any>("1024");
   const [model, setModel] = useState<any>("flux");
   const [isImageGenerated, setIsImageGenerated] = useState<boolean>(false);
-  
+  // const [isImage, setIsImage] = useState<boolean>(false);
+  const [isAiPromptGenerated, setIsAiPromptGenerated] = useState<boolean>(false);
+
   //ai api configuration
   const [history, setHistory] = useState<any[]>([
-      {
-        role: "user",
-        parts: [
-          {
-            text: "Give prompt for random image generation",
-          },
-        ],
-      },
-      {
-        role: "model",
-        parts: [
-          {
-            text: "A futuristic city at sunset, with towering neon skyscrapers reflecting off a glassy river. Flying cars zoom between the buildings, and holographic billboards light up the sky. In the foreground, a cyberpunk-style street market is bustling with people wearing high-tech augmented reality glasses. The atmosphere is vibrant, with a mix of warm and cool lighting, creating a visually stunning sci-fi scene.",
-          },
-        ],
-      },
-      {
-        role: "user",
-        parts: [
-          {
-            text: "Give prompt for random image generation",
-          },
-        ],
-      },
-      {
-        role: "model",
-        parts: [
-          {
-            text: "Generate a high-resolution image of a breathtaking natural landscape. The scene should feature a lush green valley surrounded by towering mountains, with a crystal-clear river flowing through the center. The sky is a blend of warm sunset colors, casting a golden glow over the landscape. Mist gently rises from the water, and wildflowers in vibrant hues dot the grassy fields. The atmosphere should feel serene and untouched, evoking a sense of peace and wonder.",
-          },
-        ],
-      },
-    ]);
-    // const [randomPrompt, setRandomPrompt] = useState<string>('')
-  
-    const apiKey: any = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-    const genAI = new GoogleGenerativeAI(apiKey);
-  
-    const aiModel = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash-exp",
-    });
-  
-    const generationConfig = {
-      temperature: 1,
-      topP: 0.95,
-      topK: 40,
-      maxOutputTokens: 8192,
-      responseMimeType: "text/plain",
-    };
-  
-    const askRandomPrompt = async () => {
-      try {
-        const chatSession = aiModel.startChat({
-          generationConfig,
-          history: history,
-        });
-    
-        const result = await chatSession.sendMessage("Give prompt for random image generation");
-        const responseText = result.response.text();
-        console.log("response", responseText);
-        setPromptText(responseText);
-        
-      } catch (error) {
-        console.log(error)
-      }
-    };
-    const updateImageUrl=async(prompt:string,url:string)=>{
-      try {
-        const docRef = doc(db, "users", auth.currentUser?.uid!);
-        const val = (await getDoc(docRef)).data()?.ImageUrls;
-        await updateDoc(docRef, {
-          ImageUrls: val.concat({ prompt: prompt, url: url }),
-        }).then(() => {
-          console.log("Image url added successfully");
-        }).catch((error) => {
-          console.log(error);
-        })
-      } catch (error) {
-        console.log(error)
-      }
-    }
-  const imgUrl = async (promptText:string) => {
+    {
+      role: "user",
+      parts: [
+        {
+          text: "Give prompt for random image generation",
+        },
+      ],
+    },
+    {
+      role: "model",
+      parts: [
+        {
+          text: "A futuristic city at sunset, with towering neon skyscrapers reflecting off a glassy river. Flying cars zoom between the buildings, and holographic billboards light up the sky. In the foreground, a cyberpunk-style street market is bustling with people wearing high-tech augmented reality glasses. The atmosphere is vibrant, with a mix of warm and cool lighting, creating a visually stunning sci-fi scene.",
+        },
+      ],
+    },
+    {
+      role: "user",
+      parts: [
+        {
+          text: "Give prompt for random image generation",
+        },
+      ],
+    },
+    {
+      role: "model",
+      parts: [
+        {
+          text: "Generate a high-resolution image of a breathtaking natural landscape. The scene should feature a lush green valley surrounded by towering mountains, with a crystal-clear river flowing through the center. The sky is a blend of warm sunset colors, casting a golden glow over the landscape. Mist gently rises from the water, and wildflowers in vibrant hues dot the grassy fields. The atmosphere should feel serene and untouched, evoking a sense of peace and wonder.",
+        },
+      ],
+    },
+  ]);
+
+  const apiKey: any = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+  const genAI = new GoogleGenerativeAI(apiKey);
+
+  const aiModel = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash-exp",
+  });
+
+  const generationConfig = {
+    temperature: 1,
+    topP: 0.95,
+    topK: 40,
+    maxOutputTokens: 8192,
+    responseMimeType: "text/plain",
+  };
+
+  const askRandomPrompt = async () => {
     try {
-      setIsImageGenerated(false);
-      setPromptText('');
+      setIsAiPromptGenerated(true);
+      const chatSession = aiModel.startChat({
+        generationConfig,
+        history: history,
+      });
+
+       await chatSession.sendMessage(
+        "Give prompt for random image generation"
+      ).then((response) => {
+        setPromptText(response.response.text());
+        setIsAiPromptGenerated(false);
+      }).catch((error) => {
+        console.log(error);
+        setIsAiPromptGenerated(false);
+      })
+
+    } catch (error) {
+      console.log(error);
+      setIsAiPromptGenerated(false);
+    }
+  };
+  const updateImageUrl = async (prompt: string, url: string) => {
+    try {
+      const docRef = doc(db, "users", auth.currentUser?.uid!);
+      const val = (await getDoc(docRef)).data()?.ImageUrls;
+      await updateDoc(docRef, {
+        ImageUrls: val.concat({ prompt: prompt, url: url }),
+      })
+        .then(() => {
+          console.log("Image url added successfully");
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const imgUrl = async (promptText: string) => {
+    try {
+      setIsImageGenerated(true);
+      setPromptText("");
       const seed = 42;
-      if(parseInt(width)<200 || parseInt(width)>1024){
-        alert('Width should be greater than 200 and less than 1024')
-      }
-      else if(parseInt(height)<200 || parseInt(height)>1024){
-        alert('Height should be greater than 200 and less than 1024')
-      }
-      else{
-        
+      if (parseInt(width) < 200 || parseInt(width) > 1024) {
+        alert("Width should be greater than 200 and less than 1024");
+      } else if (parseInt(height) < 200 || parseInt(height) > 1024) {
+        alert("Height should be greater than 200 and less than 1024");
+      } else {
         await fetch(
           `https://pollinations.ai/p/${promptText}?width=${width}&height=${height}&seed=${seed}&model=${model}&nologo=true`
-        ).then((res) => {
-          updateImageUrl(promptText,res.url)
-          setimageUrl(res.url);
-          setIsImageGenerated(true);
-        }).catch((error) => {
-          console.log(error);
-          setIsImageGenerated(false);
-        })
-        
+        )
+          .then((res) => {
+            updateImageUrl(promptText, res.url);
+            setimageUrl(res.url);
+            setIsImageGenerated(false);
+            
+          })
+          .catch((error) => {
+            console.log(error);
+            setIsImageGenerated(false);
+          })
       }
     } catch (error) {
       console.log(error);
@@ -156,9 +165,9 @@ const ImageGenerator = () => {
           .then(({ uri }) => {
             console.log("Finished downloading to ", uri);
             ToastAndroid.showWithGravity(
-              'Image successfully downloaded to your Gallery!',
+              "Image successfully downloaded to your Gallerys DCMI folder!",
               ToastAndroid.LONG,
-              ToastAndroid.CENTER,
+              ToastAndroid.CENTER
             );
             MediaLibrary.saveToLibraryAsync(uri);
           })
@@ -170,7 +179,6 @@ const ImageGenerator = () => {
       console.log(error);
     }
   };
-
 
   return (
     <View style={styles.container}>
@@ -189,9 +197,17 @@ const ImageGenerator = () => {
             <Image style={styles.image} source={{ uri: imageUrl }} />
           ) : (
             <View>
-              <Ionicons name="image-outline" size={150} color="white" />
+              
+              <Ionicons style={{alignSelf:"center"}} name="image-outline" size={150} color="white" />
             </View>
           )}
+          {isImageGenerated && <Progress.Circle
+            style={{  alignSelf: "center",zIndex:30,position:"absolute" }}
+            color="yellow"
+            size={100}
+            indeterminate={true}
+            borderWidth={10}
+          />}
         </View>
         <View style={styles.parameters}>
           <View
@@ -248,9 +264,7 @@ const ImageGenerator = () => {
                 style={styles.picker}
                 mode="dropdown"
                 selectedValue={selectedLanguage}
-                onValueChange={(itemValue, itemIndex) =>
-                  setModel(itemValue)
-                }
+                onValueChange={(itemValue, itemIndex) => setModel(itemValue)}
               >
                 <Picker.Item label="default" value="flux" />
                 <Picker.Item label="realism" value="flux-realism" />
@@ -263,11 +277,25 @@ const ImageGenerator = () => {
           </View>
         </View>
         {isImageGenerated && (
-        <View style={styles.parameters}>  
-         <Text style={{fontWeight:'bold',fontSize:20,paddingInline:20,paddingBlock:10,backgroundColor:'black',color:'white',width:300,textAlign:'center',borderRadius:15}} onPress={()=>downloadImage(imageUrl)}>download</Text>
-         
-        </View>
-          )}
+          <View style={styles.parameters}>
+            <Text
+              style={{
+                fontWeight: "bold",
+                fontSize: 20,
+                paddingInline: 20,
+                paddingBlock: 10,
+                backgroundColor: "black",
+                color: "white",
+                width: 300,
+                textAlign: "center",
+                borderRadius: 15,
+              }}
+              onPress={() => downloadImage(imageUrl)}
+            >
+              download
+            </Text>
+          </View>
+        )}
       </View>
 
       <View
@@ -284,13 +312,12 @@ const ImageGenerator = () => {
         }}
       >
         <TextInput
-          style={{ marginLeft: 20, width: "75%" }}
+          style={{ marginLeft: 20, width: "75%",fontWeight:"bold",color:"black" }}
           multiline
           disableFullscreenUI
-          placeholder="Prompt"
+          placeholder={isAiPromptGenerated ? "Ai is generating prompt..." : "Enter your prompt..."}
           onChangeText={setPromptText}
           defaultValue={promptText}
-          
         />
         {promptText?.trim() ? (
           <AntDesign
@@ -347,6 +374,7 @@ const styles = StyleSheet.create({
   },
   image: {
     display: "flex",
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     width: 300,

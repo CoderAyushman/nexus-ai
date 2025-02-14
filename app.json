@@ -16,7 +16,12 @@
       "adaptiveIcon": {
         "backgroundColor": "#000000"
       },
-      "package": "com.anonymous.nexusainew"
+      "package": "com.anonymous.nexusainew",
+      "permissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_MEDIA_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -29,22 +34,32 @@
       "expo-font",
       "@react-native-firebase/app",
       "@react-native-google-signin/google-signin",
-     ["expo-video",
+      [
+        "expo-video",
         {
           "supportsBackgroundPlayback": true,
           "supportsPictureInPicture": true
-        }],
-        [
-          "expo-media-library",
-          {
-            "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
-            "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
-            "isAccessMediaLocationEnabled": true
-          }
-        ]
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
+          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "2b3de6ba-6ce7-45ec-9245-f27773683828"
+      }
     }
   }
 }

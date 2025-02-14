@@ -17,8 +17,9 @@ import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Progress from "react-native-progress";
-import AntDesign from '@expo/vector-icons/AntDesign';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import AntDesign from "@expo/vector-icons/AntDesign";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+
 const Home = () => {
   var { index }: any = useLocalSearchParams();
   const [prompts, setPrompts] = useState<string[]>([]);
@@ -179,11 +180,10 @@ const Home = () => {
         AsyncStorage.removeItem("answer");
         AsyncStorage.removeItem("prompts");
         console.log("Document successfully updated!");
-    }} catch (error) {
+      }
+    } catch (error) {
       console.log(error);
     }
-      
-    
   };
   useEffect(() => {
     currentChat();
@@ -221,15 +221,20 @@ const Home = () => {
             color="black"
             onPress={() => router.push("/PreviousChats")}
           />
-          {answer.length > 0 && 
-         <MaterialCommunityIcons name="note-remove-outline" size={28} color="black" onPress={clearAnswer} />}
+          {answer.length > 0 && (
+            <MaterialCommunityIcons
+              name="note-remove-outline"
+              size={28}
+              color="black"
+              onPress={clearAnswer}
+            />
+          )}
           <FontAwesome6
             name="pen-to-square"
             size={24}
             color="black"
             onPress={newChat}
           />
-         
         </View>
 
         <ScrollView style={styles.scrollView}>
@@ -250,7 +255,9 @@ const Home = () => {
           {prompts.map((prompt, index) => (
             <View key={index}>
               <View style={styles.promptArea}>
-                <Text selectable style={styles.promptText}>{prompt}</Text>
+                <Text selectable style={styles.promptText}>
+                  {prompt}
+                </Text>
               </View>
               <View style={styles.promptAnswerArea}>
                 <Image
@@ -418,10 +425,9 @@ const styles = StyleSheet.create({
     // width:'100%',
     position: "absolute",
     // marginInline: "auto",
-    alignSelf:'center',
+    alignSelf: "center",
     marginTop: 130,
     // marginBlock:'auto',
     zIndex: 20,
-    
   },
 });
