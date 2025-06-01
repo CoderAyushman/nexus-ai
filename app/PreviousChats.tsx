@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import React, { useEffect, useState } from "react";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import { auth, db } from "@/firebaseConfig";
 import { arrayRemove, doc, getDoc, updateDoc } from "firebase/firestore";
 import Feather from "@expo/vector-icons/Feather";
@@ -9,25 +9,39 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Progress from "react-native-progress";
 
 const PreviousChats = () => {
+  const router = useRouter();
   const [promts, setPromts] = useState<any[]>([]);
   const [isPrevChat, setIsPrevChat] = useState(false);
   const fetchChats = async () => {
-    const docRef = doc(db, "users", auth.currentUser?.uid!);
-    const val = await getDoc(docRef);
-    if (val.data()?.chats.length > 0) {
-      setPromts(val.data()?.chats);
-      console.log(val.data()?.chats);
+    try {
+      
+      const docRef = doc(db, "users", auth.currentUser?.uid!);
+      console.log("auth", auth.currentUser?.uid);
+      const val = await getDoc(docRef);
+      console.log("val", val);
+      if (val?.data()?.chats?.length > 0) {
+        setPromts(val.data()?.chats);
+        console.log("chats", val?.data()?.chats);
+      }
+      else{
+        console.log("no prev chats ");
+        
+      }
+      setTimeout(() => {
+        console.log("prev chat is true");
+        setIsPrevChat(true);
+      }, 800);
+    } catch (error) {
+      console.log("error", error);
     }
-    setTimeout(() => {
-      setIsPrevChat(true);
-    }, 800);
   };
   useEffect(() => {
-    fetchChats();
+    console.log("start");
     setIsPrevChat(false);
+    fetchChats();
   }, []);
   const openChat = async (index: number) => {
-    console.log(index);
+    console.log("index", index);
     router.push({ pathname: "/Home", params: { index } });
   };
   const deleteChat = async (index: number) => {
@@ -44,7 +58,7 @@ const PreviousChats = () => {
         fetchChats();
       }
     } catch (error) {
-      console.log(error);
+      console.log("error", error);
     }
   };
   return (
@@ -139,7 +153,6 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    // justifyContent:'space-between'
     gap: 20,
   },
 });

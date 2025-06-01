@@ -5,32 +5,43 @@ import {
   StyleSheet,
   TextInput,
   ToastAndroid,
+  ImageBackground,
+  Dimensions,
 } from "react-native";
 import React, { useState } from "react";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 import Entypo from "@expo/vector-icons/Entypo";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { Picker } from "@react-native-picker/picker";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/firebaseConfig";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import * as Progress from "react-native-progress";
-// import ToastManager, { Toast } from "toastify-react-native";
+import { Picker } from '@react-native-picker/picker';
+const { width,height } = Dimensions.get("window");
 const ImageGenerator = () => {
+  const router = useRouter();
   const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
   const [imageUrl, setimageUrl] = useState<string>();
-  const [selectedLanguage, setSelectedLanguage] = useState();
   const [promptText, setPromptText] = useState<any>("");
   const [width, setWidth] = useState<any>("1024");
   const [height, setHeight] = useState<any>("1024");
-  const [model, setModel] = useState<any>("flux");
+  const [open, setOpen] = useState(false);
+  const [model, setModel] = useState<string[]>(["flux"]);
+  const [items, setItems] = useState([
+    { label: "default", value: "flux" },
+    { label: "realism", value: "flux-realism" },
+    { label: "dark", value: "any-dark" },
+    { label: "anime", value: "flux-anime" },
+    { label: "3d", value: "flux-3d" },
+    { label: "turbo", value: "turbo" },
+  ]);
   const [isImageGenerated, setIsImageGenerated] = useState<boolean>(false);
-  // const [isImage, setIsImage] = useState<boolean>(false);
-  const [isAiPromptGenerated, setIsAiPromptGenerated] = useState<boolean>(false);
+  const [isImage, setIsImage] = useState<boolean>(false);
+  const [isAiPromptGenerated, setIsAiPromptGenerated] =
+    useState<boolean>(false);
 
   //ai api configuration
   const [history, setHistory] = useState<any[]>([
@@ -66,6 +77,54 @@ const ImageGenerator = () => {
         },
       ],
     },
+    {
+      role: "user",
+      parts: [
+        {
+          text: "Give prompt for random image generation",
+        },
+      ],
+    },
+    {
+      role: "model",
+      parts: [
+        {
+          text: "Create a whimsical illustration of a fluffy, purple dragon sitting atop a giant mushroom in a magical forest. The dragon has large, friendly eyes and is wearing a tiny crown. The mushroom is glowing with soft, bioluminescent light. The surrounding forest is filled with strange and colorful plants, sparkling fireflies, and hidden pathways. The overall tone should be playful and enchanting, reminiscent of a children's storybook illustration.",
+        },
+      ],
+    },
+    {
+      role: "user",
+      parts: [
+        {
+          text: "Give prompt for random image generation",
+        },
+      ],
+    },
+    {
+      role: "model",
+      parts: [
+        {
+          text: "An epic fantasy scene depicting a lone warrior facing a massive, fire-breathing dragon on a desolate, rocky mountain peak. The warrior is clad in shining armor, wielding a glowing sword. The dragon's scales shimmer in the light of the setting sun, and smoke billows from its nostrils. The sky is filled with swirling clouds and lightning. Focus on creating a sense of scale and dramatic tension.",
+        },
+      ],
+    },
+    {
+      role: "user",
+      parts: [
+        {
+          text: "Give prompt for random image generation",
+        },
+      ],
+    },
+    {
+      role: "model",
+      parts: [
+        {
+          text: "A photorealistic image of a bioluminescent jellyfish gracefully floating in the deep ocean. The surrounding water is dark and mysterious, with faint shafts of light piercing through. The jellyfish is radiating a soft, ethereal glow, with intricate patterns visible on its bell and tentacles. Small, glowing particles drift around it, creating a magical and otherworldly atmosphere. The composition should be close-up, focusing on the beauty and fragility of the creature.",
+        },
+      ],
+    },
   ]);
 
   const apiKey: any = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
@@ -91,16 +150,16 @@ const ImageGenerator = () => {
         history: history,
       });
 
-       await chatSession.sendMessage(
-        "Give prompt for random image generation"
-      ).then((response) => {
-        setPromptText(response.response.text());
-        setIsAiPromptGenerated(false);
-      }).catch((error) => {
-        console.log(error);
-        setIsAiPromptGenerated(false);
-      })
-
+      await chatSession
+        .sendMessage("Give prompt for random image generation")
+        .then((response) => {
+          setPromptText(response.response.text());
+          setIsAiPromptGenerated(false);
+        })
+        .catch((error) => {
+          console.log(error);
+          setIsAiPromptGenerated(false);
+        });
     } catch (error) {
       console.log(error);
       setIsAiPromptGenerated(false);
@@ -126,6 +185,7 @@ const ImageGenerator = () => {
   const imgUrl = async (promptText: string) => {
     try {
       setIsImageGenerated(true);
+      setIsImage(false);
       setPromptText("");
       const seed = 42;
       if (parseInt(width) < 200 || parseInt(width) > 1024) {
@@ -137,15 +197,16 @@ const ImageGenerator = () => {
           `https://pollinations.ai/p/${promptText}?width=${width}&height=${height}&seed=${seed}&model=${model}&nologo=true`
         )
           .then((res) => {
+            setIsImage(true);
             updateImageUrl(promptText, res.url);
             setimageUrl(res.url);
             setIsImageGenerated(false);
-            
           })
           .catch((error) => {
             console.log(error);
+            setIsImage(false);
             setIsImageGenerated(false);
-          })
+          });
       }
     } catch (error) {
       console.log(error);
@@ -160,7 +221,7 @@ const ImageGenerator = () => {
         console.log("permission granted");
         FileSystem.downloadAsync(
           uri,
-          FileSystem.documentDirectory + "small.png"
+          FileSystem.documentDirectory + "nexusai.png"
         )
           .then(({ uri }) => {
             console.log("Finished downloading to ", uri);
@@ -187,9 +248,7 @@ const ImageGenerator = () => {
         name="folder-images"
         size={40}
         color="black"
-        onPress={() => {
-          router.push("/ImagesFetcher");
-        }}
+        onPress={() => router.push("/ImagesFetcher")}
       />
       <View>
         <View style={styles.image}>
@@ -197,17 +256,22 @@ const ImageGenerator = () => {
             <Image style={styles.image} source={{ uri: imageUrl }} />
           ) : (
             <View>
-              
-              <Ionicons style={{alignSelf:"center"}} name="image-outline" size={150} color="white" />
+              {/* <Ionicons style={{alignSelf:"center"}} name="image-outline" size={150} color="white" /> */}
+              <ImageBackground
+                style={{ alignSelf: "center", width: 150, height: 150 }}
+                source={require("../../assets/images/logobw.png")}
+              />
             </View>
           )}
-          {isImageGenerated && <Progress.Circle
-            style={{  alignSelf: "center",zIndex:30,position:"absolute" }}
-            color="yellow"
-            size={100}
-            indeterminate={true}
-            borderWidth={10}
-          />}
+          {isImageGenerated && (
+            <Progress.Circle
+              style={{ alignSelf: "center", zIndex: 30, position: "absolute" }}
+              color="yellow"
+              size={100}
+              indeterminate={true}
+              borderWidth={10}
+            />
+          )}
         </View>
         <View style={styles.parameters}>
           <View
@@ -260,10 +324,10 @@ const ImageGenerator = () => {
           >
             <Text style={{ fontWeight: "bold" }}>model:</Text>
             <View style={{ borderRadius: 15, overflow: "hidden" }}>
-              <Picker
+            <Picker
                 style={styles.picker}
                 mode="dropdown"
-                selectedValue={selectedLanguage}
+                selectedValue={model}
                 onValueChange={(itemValue, itemIndex) => setModel(itemValue)}
               >
                 <Picker.Item label="default" value="flux" />
@@ -276,7 +340,7 @@ const ImageGenerator = () => {
             </View>
           </View>
         </View>
-        {isImageGenerated && (
+        {isImage && (
           <View style={styles.parameters}>
             <Text
               style={{
@@ -284,7 +348,7 @@ const ImageGenerator = () => {
                 fontSize: 20,
                 paddingInline: 20,
                 paddingBlock: 10,
-                backgroundColor: "black",
+                backgroundColor: "#979797",
                 color: "white",
                 width: 300,
                 textAlign: "center",
@@ -312,10 +376,19 @@ const ImageGenerator = () => {
         }}
       >
         <TextInput
-          style={{ marginLeft: 20, width: "75%",fontWeight:"bold",color:"black" }}
+          style={{
+            marginLeft: 20,
+            width: "75%",
+            fontWeight: "bold",
+            color: "black",
+          }}
           multiline
           disableFullscreenUI
-          placeholder={isAiPromptGenerated ? "Ai is generating prompt..." : "Enter your prompt..."}
+          placeholder={
+            isAiPromptGenerated
+              ? "Ai is generating prompt..."
+              : "Enter your prompt..."
+          }
           onChangeText={setPromptText}
           defaultValue={promptText}
         />
@@ -359,7 +432,6 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: "white",
     display: "flex",
-    // flexDirection:'column',
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
@@ -370,18 +442,19 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     top: 30,
     left: 35,
-    // zIndex: 20,
   },
   image: {
     display: "flex",
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    width: 300,
-    height: 300,
+    width:  Math.min(width * 0.85),
+    height:  Math.min(width * 0.85),
     backgroundColor: "#D9D9D9",
     borderRadius: 15,
     marginInline: "auto",
+    borderWidth:1,
+    borderColor:'purple' 
   },
   parameters: {
     display: "flex",
@@ -396,7 +469,6 @@ const styles = StyleSheet.create({
   parameterText: {
     height: 50,
     width: 80,
-    // fontWeight: "bold",
     color: "gray",
     paddingBlock: 30,
     marginInline: 5,
@@ -409,6 +481,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     color: "gray",
     overflow: "hidden",
+    zIndex: 20,
   },
 });
 

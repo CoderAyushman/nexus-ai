@@ -1,21 +1,61 @@
+// {
+//   "cli": {
+//     "version": ">= 15.0.10",
+//     "appVersionSource": "remote"
+//   },
+//   "build": {
+//     "development": {
+//       "developmentClient": true,
+//       "distribution": "internal"
+//     },
+//     "preview": {
+//       "distribution": "internal",
+//       "android": {
+//         "buildType": "apk"
+//       }
+//     },
+//     "production": {
+//       "autoIncrement": true,
+//       "android": {
+//         "buildType": "app-bundle"
+//       }
+//     }
+//   },
+//   "submit": {
+//     "production": {}
+//   }
+// }
 {
   "cli": {
-    "version": ">= 15.0.10",
     "appVersionSource": "remote"
   },
   "build": {
     "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
+            "developmentClient": true,
+            "distribution": "internal"
+          },
     "preview": {
-      "distribution": "internal"
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyAsuAuYh3ZxwT61y1vEm62iJFzrXhY6vCw",
+        "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "nexus-ai-ed5c6.firebaseapp.com",
+        "EXPO_PUBLIC_PROJECT_ID": "nexus-ai-ed5c6",
+        "EXPO_PUBLIC_MESSAGE_SENDER_ID": "108857393027"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyAsuAuYh3ZxwT61y1vEm62iJFzrXhY6vCw",
+        "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "nexus-ai-ed5c6.firebaseapp.com",
+        "EXPO_PUBLIC_PROJECT_ID": "nexus-ai-ed5c6",
+        "EXPO_PUBLIC_MESSAGE_SENDER_ID": "108857393027"
+      }
     }
-  },
-  "submit": {
-    "production": {}
   }
 }

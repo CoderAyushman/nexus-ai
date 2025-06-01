@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import Entypo from "@expo/vector-icons/Entypo";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import {
   createUserWithEmailAndPassword,
   getAuth,
@@ -19,9 +19,9 @@ import {
 import { auth, db } from "../firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { doc, setDoc } from "firebase/firestore";
-// import { auth } from '@/firebaseConfig';
 
 const LoginModal = () => {
+  const router = useRouter();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [isSignIn, setisSignIn] = useState<boolean>(false);
@@ -35,10 +35,12 @@ const LoginModal = () => {
   };
   const onPressNextForSignUp = async () => {
     try {
-      createUserWithEmailAndPassword(auth, email, password)
+      const Email=email.trim()
+      console.log(Email);
+      createUserWithEmailAndPassword(auth, Email, password)
         .then(async (userCredential) => {
           // Signed up
-          const user: any = userCredential.user;
+          const user: any = userCredential.user;     
           await linkUidToFirestore(user.uid, user.email);
           Alert.alert("User created successfully", user.email);
           router.push("/Home");
@@ -65,7 +67,9 @@ const LoginModal = () => {
   };
   const onPressNextForSignIn = () => {
     try {
-      signInWithEmailAndPassword(auth, email, password)
+      const Email=email.trim()
+      console.log(Email);
+      signInWithEmailAndPassword(auth, Email, password)
         .then(async (userCredential) => {
           // Signed up
           const user: any = userCredential.user;
@@ -97,10 +101,10 @@ const LoginModal = () => {
     }
   };
   const changePassword = () => {
-      try {
-       if(email){
-        const auth  = getAuth();
-        const Email=email.trim();
+    try {
+      if (email) {
+        const auth = getAuth();
+        const Email = email.trim();
         sendPasswordResetEmail(auth, Email)
           .then(() => {
             ToastAndroid.showWithGravity(
@@ -112,25 +116,22 @@ const LoginModal = () => {
           .catch((error) => {
             const errorCode = error.code;
             const errorMessage = error.message;
-            if(errorCode === "auth/user-not-found"){
+            if (errorCode === "auth/user-not-found") {
               Alert.alert("Alert", "User not found");
-            }
-            else if(errorCode === "auth/invalid-email"){
+            } else if (errorCode === "auth/invalid-email") {
               Alert.alert("Alert", "Invalid email");
-            }
-            else{
+            } else {
               Alert.alert("Error", errorMessage);
             }
             // ..
           });
-       }
-       else{
+      } else {
         Alert.alert("Alert", "Please enter email");
-       }
-      } catch (error) {
-        console.log(error);
       }
-    };
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <View style={styles.view}>
       <View style={styles.container}>
@@ -161,18 +162,16 @@ const LoginModal = () => {
           placeholder="Enter your password"
           onChangeText={setPassword}
         ></TextInput>
-        {!isSignIn && (
-            
-            <Text
-              style={{ color: "blue", fontWeight: "bold",alignSelf:"flex-end" }}
-              onPress={() => {
-                changePassword();
-              }}
-              >
-             Forgot Password?
-            </Text>
-         
-          )}
+        {!isSignIn ? (
+          <Text
+            style={{ color: "blue", fontWeight: "bold", alignSelf: "flex-end" }}
+            onPress={() => {
+              changePassword();
+            }}
+          >
+            Forgot Password?
+          </Text>
+        ):(<View style={{marginTop:20}}></View>)}
         <Pressable
           style={styles.pressable}
           onPress={isSignIn ? onPressNextForSignUp : onPressNextForSignIn}
@@ -189,7 +188,6 @@ const LoginModal = () => {
           </Text>
         </Pressable>
         {isSignIn ? (
-          
           <Text style={styles.newUser}>
             Already have an account?{" "}
             <Text
@@ -197,7 +195,7 @@ const LoginModal = () => {
               onPress={() => {
                 setisSignIn(false);
               }}
-              >
+            >
               Sign In
             </Text>
           </Text>
@@ -209,12 +207,10 @@ const LoginModal = () => {
               onPress={() => {
                 setisSignIn(true);
               }}
-              >
+            >
               Sign Up
             </Text>
           </Text>
-          
-                
         )}
       </View>
     </View>

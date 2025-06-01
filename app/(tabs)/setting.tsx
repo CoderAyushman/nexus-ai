@@ -7,19 +7,20 @@ import {
   ToastAndroid,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import {sendPasswordResetEmail} from "firebase/auth";
+import { sendPasswordResetEmail } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Entypo from "@expo/vector-icons/Entypo";
-import { auth,db } from "@/firebaseConfig";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
-import { router } from "expo-router";
+import { auth, db } from "@/firebaseConfig";
+import { doc, updateDoc } from "firebase/firestore";
+import { useRouter } from "expo-router";
 <Ionicons name="log-out" size={24} color="black" />;
 
 const Setting = () => {
+  const router = useRouter();
   const [user, setUser] = useState<string>("");
   useEffect(() => {
     getUser();
@@ -51,38 +52,49 @@ const Setting = () => {
       console.log(error);
     }
   };
-  const DeleteAllData=async()=>{
+  const DeleteAllData = async () => {
     try {
-      console.log("Clear Pressed")
+      console.log("Clear Pressed");
       const userUid: any = auth.currentUser?.uid;
-        console.log(userUid);
-        const docRef = doc(db, "users", userUid);
-        await updateDoc(docRef, {
-          chats: [],
-          ImageUrls: [],
-        }).then(() => {
+      console.log(userUid);
+      const docRef = doc(db, "users", userUid);
+      await updateDoc(docRef, {
+        chats: [],
+        ImageUrls: [],
+      })
+        .then(() => {
           ToastAndroid.showWithGravity(
             `All Data Clear Successfully`,
             ToastAndroid.LONG,
             ToastAndroid.CENTER
           );
-        }).catch((error) => {
-          console.log(error);
         })
+        .catch((error) => {
+          console.log(error);
+        });
     } catch (error) {
       console.log(error);
     }
-  }
+  };
   const clearData = () =>
-    Alert.alert("Clear All Data", "This action will permanently delete all your data from our database, including all your chats and AI-generated images. This process is irreversible.", [
-      {
-        text: "Cancel",
-        onPress: () => console.log("Cancel Pressed"),
-        style: "cancel",
-      },
-      { text: "CLEAR", onPress: () =>{ DeleteAllData() } },
-    ]);
-    
+    Alert.alert(
+      "Clear All Data",
+      "This action will permanently delete all your data from our database, including all your chats and AI-generated images. This process is irreversible.",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel",
+        },
+        {
+          text: "CLEAR",
+          onPress: () => {
+            DeleteAllData();
+          },
+        },
+      ]
+    );
+
   const LogOut = () =>
     Alert.alert("Log Out", "Are you sure you want to log out?", [
       {
@@ -90,24 +102,26 @@ const Setting = () => {
         onPress: () => console.log("Cancel Pressed"),
         style: "cancel",
       },
-      { text: "LogOut", onPress: async() =>{
-        try {
-          
-          console.log("OK Pressed")
-          AsyncStorage.removeItem("user");
-          auth.signOut().then(() => {
-            console.log("Signed Out");
-            ToastAndroid.showWithGravity(
-              `Log Out Successfully`,
-              ToastAndroid.LONG,
-              ToastAndroid.CENTER
-            );
-            router.replace("/");
-          });
-        } catch (error) {
-          console.log(error);
-        }
-          }}
+      {
+        text: "LogOut",
+        onPress: async () => {
+          try {
+            console.log("OK Pressed");
+            AsyncStorage.removeItem("user");
+            auth.signOut().then(() => {
+              console.log("Signed Out");
+              ToastAndroid.showWithGravity(
+                `Log Out Successfully`,
+                ToastAndroid.LONG,
+                ToastAndroid.CENTER
+              );
+              router.replace("/");
+            });
+          } catch (error) {
+            console.log(error);
+          }
+        },
+      },
     ]);
   return (
     <View style={styles.container}>
@@ -162,6 +176,7 @@ const Setting = () => {
           color="black"
         />
       </Pressable>
+      <Text style={styles.version}>App Version: 1.0.0</Text>
     </View>
   );
 };
@@ -236,6 +251,15 @@ const styles = StyleSheet.create({
   },
   propertiesIconRight: {
     marginRight: 20,
+  },
+  version: {
+    marginTop: 50,
+    color: "gray",
+    fontWeight: "bold",
+    fontSize: 20,
+    marginBottom: 50,
+    textAlign: "center",
+    paddingBlock: 10,
   },
 });
 

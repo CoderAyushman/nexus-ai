@@ -2,43 +2,44 @@ import { StyleSheet, View } from "react-native";
 import GetStarted from "@/components/GetStarted";
 import React, { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 
 SplashScreen.preventAutoHideAsync();
-// SplashScreen.setOptions({
-//   duration: 10000,
-//   fade: true,
-// })
-const index = () => {
-  const [isUserFind, setisUserFind] = useState<boolean>(false);
-
+const Index = () => {
+  const router = useRouter();
+  const [isUserFind, setIsUserFind] = useState<boolean | null>(null);
   useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const user = await AsyncStorage.getItem("user");
+
+        if (user) {
+          console.log("User found:", user);
+          setIsUserFind(true);
+        } else {
+          console.log("No user found");
+          setIsUserFind(false);
+        }
+      } catch (error) {
+        console.error("Error checking user:", error); 
+      } finally {
+        await SplashScreen.hideAsync(); // ✅ Ensure splash screen hides
+      }
+    };
+
     checkUser();
   }, []);
+
   useEffect(() => {
-    if (isUserFind) {
+    if (isUserFind === true) {
       router.replace("/Home");
     }
   }, [isUserFind]);
-  const checkUser = async () => {
-    try {
-      //hello
-      const user = await AsyncStorage.getItem("user");
-      if (user) {
-        console.log(user);
-        setisUserFind(true);
-        router.replace("/Home");
-      } else {
-        console.log("No user found");
-        // setisUserFind(true
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      SplashScreen.hideAsync();
-    }
-  };
+
+  if (isUserFind === null) {
+    return null; // Prevent rendering until checkUser completes
+  }
 
   return (
     <View style={styles.container}>
@@ -47,7 +48,7 @@ const index = () => {
   );
 };
 
-export default index;
+export default Index;
 
 const styles = StyleSheet.create({
   container: {

@@ -1,7 +1,10 @@
-import { View, StyleSheet, Image, Text, Pressable, Alert } from "react-native";
+import { View, StyleSheet, Image, Text, Pressable,Dimensions } from "react-native";
 import React from "react";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
+
+const { width, height } = Dimensions.get("window");
 const LoginPage = () => {
+  const router = useRouter();
   const loginFunction = async () => {
     router.push("/LoginModal");
   };
@@ -48,16 +51,16 @@ const styles = StyleSheet.create({
 
   image: {
     marginTop: -60,
-    width: 413,
-    height: 530,
+    width:  Math.min(width * 1),
+    height:  Math.min(height * 0.75),
   },
 
   box: {
-    height: 417,
-    width: 412,
+    height:  Math.min(height * 0.35),
+    width:  Math.min(width * 1),
     backgroundColor: "white",
     zIndex: 10,
-    marginTop: -40,
+    marginTop: -60,
     borderStartStartRadius: "22%",
     borderEndStartRadius: "22%",
   },

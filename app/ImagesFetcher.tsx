@@ -5,16 +5,18 @@ import {
   ScrollView,
   Image,
   Pressable,
+  Dimensions,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import { auth, db } from "@/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 
 import * as Progress from "react-native-progress";
-
+const { width } = Dimensions.get("window");
 const ImagesFetcher = () => {
+  const router = useRouter();
   const [images, setImages] = useState<any[]>([]);
   const [isImagesAvailable, setIsImagesAvailable] = useState(false);
   const fetchImages = async () => {
@@ -69,7 +71,7 @@ const ImagesFetcher = () => {
                   }}
                 >
                   <Image
-                    style={{ width: 100, height: 100, borderRadius: 10 }}
+                    style={styles.image}
                     source={{ uri: item.url }}
                   />
                 </Pressable>
@@ -113,15 +115,19 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   imageContainer: {
-    width: "100%",
-    display: "flex",
-    flexDirection: "row",
-    flexWrap: "wrap",
+    // width:'80%',
+    display: 'flex',
     gap: 5,
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginInline:5,
+    justifyContent: "space-between",
+    marginBottom:150
+
   },
   madal: {
+    display: "flex",
+    flexDirection: "row",
     backgroundColor: "#303030",
     width: "90%",
     height: "100%",
@@ -129,8 +135,8 @@ const styles = StyleSheet.create({
     marginTop: 50,
     borderTopStartRadius: 30,
     borderTopEndRadius: 30,
-    alignItems: "center",
-    justifyContent: "center",
+    // alignItems: "center",
+    // justifyContent: "center",
     paddingBottom: 70,
   },
   text: {
@@ -156,4 +162,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 20,
   },
+  image:{ width: Math.min(width * 0.42), height: Math.min(width * 0.42), borderRadius: 10,borderWidth:1,borderColor:'purple' }
 });

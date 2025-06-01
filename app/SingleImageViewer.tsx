@@ -2,12 +2,13 @@ import { View, Text, StyleSheet, Image, ToastAndroid } from "react-native";
 import React, { useEffect } from "react";
 import { auth, db } from "@/firebaseConfig";
 import { arrayRemove, doc, getDoc, updateDoc } from "firebase/firestore";
-import { router, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 const SingleImageViewer = () => {
+  const router = useRouter();
   const { prompt, url, index }: any = useLocalSearchParams();
   const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
   const deleteImage = async (index: number) => {
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
     width: 320,
     fontSize: 15,
     fontWeight: "black",
-    marginBottom: 50,
+    marginBottom: 5
   },
   promptHeader: {
     fontWeight: "bold",

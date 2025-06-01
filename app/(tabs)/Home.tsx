@@ -6,21 +6,24 @@ import {
   StyleSheet,
   ScrollView,
   Image,
+  ToastAndroid,
+  TouchableOpacity,
 } from "react-native";
-import Feather from "@expo/vector-icons/Feather";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Markdown from "@ukdanceblue/react-native-markdown-display";
-import { router, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Progress from "react-native-progress";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-
+import Feather from '@expo/vector-icons/Feather';
+import * as Clipboard from 'expo-clipboard';
 const Home = () => {
+  const router = useRouter();
   var { index }: any = useLocalSearchParams();
   const [prompts, setPrompts] = useState<string[]>([]);
   const [promptText, setPromptText] = useState<string>("");
@@ -39,11 +42,45 @@ const Home = () => {
       role: "model",
       parts: [
         {
-          text: "Hello! I am Nexus AI, your friendly chatbot. I was created by four BCA final year students: Ayushman, Bikash, Pritish, and Sweta.  We built me as a project to explore the fascinating world of artificial intelligence and natural language processing.\n\nYou might be wondering about a few things, so let me anticipate some of your questions:\n\n**Common Questions:**\n\n* **What's your name?**  My name is Nexus AI.\n* **Who made you?** I was created by four BCA final year students: Ayushman, Bikash, Pritish, and Sweta.\n* **Why were you created?** I was created as a learning project to explore AI and natural language processing.  We wanted to build a chatbot that could understand and respond to human language in a meaningful way.\n* **What can you do?** I can answer your questions, provide information on a variety of topics, and even engage in casual conversation.  However, my knowledge is still limited, and I am constantly learning.\n* **How do you work?** I utilize a large language model trained on a massive dataset of text and code. This allows me to understand and generate human-like text.  I am still under development, so I might make mistakes sometimes.\n* **Are you sentient?** No, I am not sentient. I am a computer program designed to simulate conversation. I do not have feelings, consciousness, or personal beliefs.\n* **What are your limitations?**  I am still under development, so my knowledge base is not exhaustive. I might struggle with complex or nuanced questions, and I can sometimes provide inaccurate or outdated information. I am also sensitive to the way questions are phrased – slight changes in wording can significantly impact my understanding.  Please be patient and clear in your requests.\n* **Can I talk to your creators?**  While I can't directly connect you with my creators, you can understand that they are students busy with their studies.  They poured a lot of effort into creating me!\n\n\nI'm always learning and improving. Feel free to ask me anything you'd like – even if it's just to chat! I'm here to help and to learn.\n",
+          text: "Hello! I am Nexus AI, your friendly chatbot. I was created by four BCA final year students: Ayushman, Bikash, Pritish, and Sweta.They built me as a project to explore the fascinating world of artificial intelligence and natural language processing.\n\nYou might be wondering about a few things, so let me anticipate some of your questions:\n\n**Common Questions:**\n\n* **What's your name?**  My name is Nexus AI.\n* **Who made you?** I was created by four BCA final year students: Ayushman, Bikash, Pritish, and Sweta.\n* **Why were you created?** I was created as a learning project to explore AI and natural language processing.  We wanted to build a chatbot that could understand and respond to human language in a meaningful way.\n* **What can you do?** I can answer your questions, provide information on a variety of topics, and even engage in casual conversation.  However, my knowledge is still limited, and I am constantly learning.\n* **How do you work?** I utilize a large language model trained on a massive dataset of text and code. This allows me to understand and generate human-like text.  I am still under development, so I might make mistakes sometimes.\n* **Are you sentient?** No, I am not sentient. I am a computer program designed to simulate conversation. I do not have feelings, consciousness, or personal beliefs.\n* **What are your limitations?**  I am still under development, so my knowledge base is not exhaustive. I might struggle with complex or nuanced questions, and I can sometimes provide inaccurate or outdated information. I am also sensitive to the way questions are phrased – slight changes in wording can significantly impact my understanding.  Please be patient and clear in your requests.\n* **Can I talk to your creators?**  While I can't directly connect you with my creators, you can understand that they are students busy with their studies.  They poured a lot of effort into creating me!\n\n\nI'm always learning and improving. Feel free to ask me anything you'd like – even if it's just to chat! I'm here to help and to learn.\n",
         },
       ],
     },
   ]);
+// const [history, setHistory] = useState<any[]>([
+//     {
+//       role: "user",
+//       parts: [
+//         {
+//           text: "Please note you are  Nexus Ai, chat bot name Nexus Ai which is made by Bhupesh Panigrahi. And also include all similar question like whats your name, who made you and all.",
+//         },
+//       ],
+//     },
+//     {
+//       role: "model",
+//       parts: [
+//         {
+//           text: "Hello! I am Nexus AI, your friendly chatbot. I was created by Bhupesh Panigrahi.He built me as a project to explore the fascinating world of artificial intelligence and natural language processing.\n\nYou might be wondering about a few things, so let me anticipate some of your questions:\n\n**Common Questions:**\n\n* **What's your name?**  My name is Nexus AI.\n* **Who made you?** I was created by four BCA final year students: Ayushman, Bikash, Pritish, and Sweta.\n* **Why were you created?** I was created as a learning project to explore AI and natural language processing.  We wanted to build a chatbot that could understand and respond to human language in a meaningful way.\n* **What can you do?** I can answer your questions, provide information on a variety of topics, and even engage in casual conversation.  However, my knowledge is still limited, and I am constantly learning.\n* **How do you work?** I utilize a large language model trained on a massive dataset of text and code. This allows me to understand and generate human-like text.  I am still under development, so I might make mistakes sometimes.\n* **Are you sentient?** No, I am not sentient. I am a computer program designed to simulate conversation. I do not have feelings, consciousness, or personal beliefs.\n* **What are your limitations?**  I am still under development, so my knowledge base is not exhaustive. I might struggle with complex or nuanced questions, and I can sometimes provide inaccurate or outdated information. I am also sensitive to the way questions are phrased – slight changes in wording can significantly impact my understanding.  Please be patient and clear in your requests.\n* **Can I talk to your creators?**  While I can't directly connect you with my creators, you can understand that they are students busy with their studies.  They poured a lot of effort into creating me!\n\n\nI'm always learning and improving. Feel free to ask me anything you'd like - even if it's just to chat! I'm here to help and to learn.",
+//         },
+//       ],
+//     },
+//     {
+//       role: "user",
+//       parts: [
+//         {
+//           text: "Who is Bhupesh Panigrahi",
+//         },
+//       ],
+//     },
+//     {
+//       role: "model",
+//       parts: [
+//         {
+//           text: "Bhupesh Panigrahi is my owner...",
+//         },
+//       ],
+//     },
+//   ]);
   // const [answer, setAnswer] = useState<string>('')
 
   const apiKey: any = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
@@ -86,7 +123,6 @@ const Home = () => {
   };
 
   const onSend = () => {
-    // console.log(promptText);
     setPromptText("");
     setPrompts([...prompts, promptText.trim()]);
     askQuestion(promptText);
@@ -161,7 +197,7 @@ const Home = () => {
       const ans: any = await AsyncStorage.getItem("answer");
       const prom: any = await AsyncStorage.getItem("prompts");
       console.log(ans, prom);
-      if (ans[0] && prom[0]) {
+      if (ans != null && prom != null) {
         console.log("ans", ans);
         console.log("prom", prom);
         const answer: any = JSON.parse(ans);
@@ -185,9 +221,9 @@ const Home = () => {
       console.log(error);
     }
   };
-  useEffect(() => {
-    currentChat();
-  }, []);
+  // useEffect(() => {
+  //   currentChat();
+  // }, []);
 
   const chatFetcher = async (index: any) => {
     const docRef = doc(db, "users", auth.currentUser?.uid!);
@@ -201,6 +237,15 @@ const Home = () => {
     console.log("index", index);
     chatFetcher(index);
   }, [index]);
+  const copyToClipboard = async (text: string) => {
+    await Clipboard.setStringAsync(text);
+    ToastAndroid.showWithGravity(
+                  "Text copied to clipboard!",
+                  ToastAndroid.SHORT,
+                  ToastAndroid.TOP
+                );
+    console.log("Text copied to clipboard:", text);
+  };
   return (
     <View
       style={{
@@ -236,18 +281,19 @@ const Home = () => {
             onPress={newChat}
           />
         </View>
+         
 
         <ScrollView style={styles.scrollView}>
           {prompts.length === 0 ? (
-            <Text style={styles.welcomeText}>Hello, how can I help you?</Text>
+            <View style={styles.welcomeTextContainer}><Text style={styles.welcomeText}>Welcome to NexusAi,</Text><Text style={styles.welcomeText}>how can I help you?</Text></View>
           ) : (
             <Text></Text>
           )}
           {loading && (
             <Progress.Circle
-              style={styles.loading}
-              color="gray"
-              size={70}
+            style={styles.loading}
+            color="gray"
+            size={70}
               indeterminate={true}
               borderWidth={10}
             />
@@ -264,9 +310,13 @@ const Home = () => {
                   style={{ width: 32, height: 30 }}
                   source={require("../../assets/images/splash.png")}
                 />
-                <Text selectable style={styles.promptAnswer}>
+                <TouchableOpacity style={styles.promptAnswer} onLongPress={() => copyToClipboard(answer[index])}>
                   <Markdown>{answer[index]}</Markdown>
-                </Text>
+                {/* {answer[index] ? (
+                <Feather  name="copy" size={24} color="gray" onPress={() => copyToClipboard(answer[index])} />
+                ) : (<View></View>)
+                  } */}
+                </TouchableOpacity>
               </View>
             </View>
           ))}
@@ -274,7 +324,12 @@ const Home = () => {
 
         <View style={styles.footer}>
           <TextInput
-            style={{ marginLeft: 20, width: "75%" }}
+            style={{
+              marginLeft: 20,
+              width: "75%",
+              fontWeight: "bold",
+              color: "black",
+            }}
             multiline
             disableFullscreenUI
             placeholder="Message"
@@ -316,7 +371,6 @@ const Home = () => {
     </View>
   );
 };
-export default Home;
 const styles = StyleSheet.create({
   container: {
     display: "flex",
@@ -345,24 +399,21 @@ const styles = StyleSheet.create({
     paddingBlock: 10,
     paddingInline: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "grey",
+    borderBottomColor: "#979797",
     zIndex: 10,
     top: 0,
-    // position:'absolute',
     backgroundColor: "white",
   },
   footer: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
     width: "100%",
-    paddingBlock: 10,
-    borderTopWidth: 1,
-    borderTopColor: "grey",
-    zIndex: 10,
     bottom: 0,
+    zIndex: 20,
     backgroundColor: "white",
+    display: "flex",
+    justifyContent: "center",
+    minHeight: 60,
+    borderTopWidth: 1,
+    borderTopColor: "#979797",
   },
   imageContainer: {
     display: "flex",
@@ -374,7 +425,7 @@ const styles = StyleSheet.create({
   },
   promptArea: {
     width: "100%",
-    marginTop: 20,
+    marginTop: 10,
     zIndex: 10,
     color: "black",
     display: "flex",
@@ -385,7 +436,7 @@ const styles = StyleSheet.create({
   },
   promptAnswerArea: {
     width: "100%",
-    marginTop: 50,
+    marginTop: 20,
     zIndex: 10,
     color: "black",
     display: "flex",
@@ -407,19 +458,23 @@ const styles = StyleSheet.create({
   promptAnswer: {
     fontWeight: "bold",
     width: "80%",
-    paddingBottom: 100,
+    marginBottom: 10,
   },
   scrollView: {
     width: "100%",
     display: "flex",
     flexDirection: "column",
+    paddingBottom: 200,
   },
   welcomeText: {
+    
+    // width: "70%",
     fontWeight: "bold",
-    fontSize: 20,
-    color: "gray",
-    marginTop: 20,
+    fontSize: 24,
+    color: "#979797",
+    
     marginInline: "auto",
+    textAlign: "center",
   },
   loading: {
     // width:'100%',
@@ -430,4 +485,10 @@ const styles = StyleSheet.create({
     // marginBlock:'auto',
     zIndex: 20,
   },
+  welcomeTextContainer:{
+    marginTop: 20,
+    display: "flex",
+    flexDirection: "column",
+  }
 });
+export default Home;
